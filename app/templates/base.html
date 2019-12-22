@@ -1,19 +1,36 @@
 {% extends 'bootstrap/base.html' %}
 
 {% block title %}
-    Vulture
+    {% if title %}
+        {{ title }} - Vulture
+    {% else %}
+        Welcome to Vulture
+    {% endif %}
 {% endblock %}
 
 {% block navbar %}
     <nav class="navbar navbar-default">
         <div class="container">
-            <a class="navbar-brand" href="/">Vulture</a>
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">Vulture</a>
+            {% if current_user.is_anonymous %}
+                <a class="navbar-brand" href="{{ url_for('auth.login') }}">Login</a>
+            {% else %}
+                <a class="navbar-brand" href="{{ url_for('auth.logout') }}">Logout</a>
+            {% endif %}
         </div>
     </nav>
 {% endblock %}
 
 {% block content %}
     <div class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-info" role="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         {% block app_content %}{% endblock %}
     </div>
 {% endblock %}

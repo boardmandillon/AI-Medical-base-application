@@ -1,10 +1,17 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
 
 from config import Config
 
-# TODO: #11 Add database functionality to web app
-# db = ...
+db_relational = SQLAlchemy()
+# TODO: #17 Add MongoDB to web app
+# mongo = ...
+migrate = Migrate()
+login = LoginManager()
+login.login_view = 'auth.login'
 bootstrap = Bootstrap()
 
 
@@ -19,6 +26,9 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     # Initiate app components
+    db_relational.init_app(app)
+    migrate.init_app(app, db_relational)
+    login.init_app(app)
     bootstrap.init_app(app)
 
     from app.errors import bp as errors_bp
