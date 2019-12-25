@@ -3,6 +3,15 @@ from flask import request
 from app.api import bp
 from app.models import User
 
+@bp.route('/users/<int:id>', methods=['GET'])
+def get_user(id):
+    pass
+
+
+@bp.route('/users', methods=['GET'])
+def get_users():
+    pass
+
 
 @bp.route('/users', methods=['POST'])
 def create_user():
