@@ -31,6 +31,16 @@ class User(UserMixin, db.Model):
         """
         return check_password_hash(self.password_hash, password)
 
+    def to_dict(self):
+        """Create a JSON representation of user
+        """
+        data = {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email
+        }
+        return data
+
     def from_dict(self, data, new_user=False):
         """Construct a user object from a dictionary.
 
@@ -43,7 +53,6 @@ class User(UserMixin, db.Model):
                 setattr(self, field, data[field])
         if new_user and 'password' in data:
             self.set_password(data['password'])
-
 
 @login.user_loader
 def load_user(_id):
