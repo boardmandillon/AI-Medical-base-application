@@ -8,14 +8,10 @@ from app.models import User
 from app.api import bp
 from app.api.errors import bad_request
 
-@bp.route('/users/<int:id>', methods=['GET'])
-def get_user(id):
-    return jsonify(User.query.get_or_404(id).to_dict())
-
 
 @bp.route('/users', methods=['POST'])
 def create_user():
-    """Create user."""
+    """Create user accounts using api stores email and password into database."""
     data = request.get_json() or {}
 
     if not data.get('email') or not data.get('password'):
