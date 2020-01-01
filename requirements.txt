@@ -9,3 +9,4 @@ flask-migrate
 flask-login
 python-dotenv
 httpie
+flask-httpauth
