@@ -1,13 +1,14 @@
 from flask import request
 from flask import url_for
 from flask import jsonify
+from flask import g, abort
 
 from app import db_relational as db
 from app.models import User
 
 from app.api import bp
 from app.api.errors import bad_request
-
+from app.api.auth import token_auth
 
 @bp.route('/users', methods=['POST'])
 def create_user():
