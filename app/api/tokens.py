@@ -7,6 +7,9 @@ from app.api.auth import token_auth
 @bp.route('/tokens', methods=['POST'])
 @basic_auth.login_required
 def get_token():
+    """Generates a token for a user and writes the token and expiration 
+    to the database
+    """
     token = g.current_user.get_token()
     db.session.commit()
     return jsonify({'token': token})
@@ -14,6 +17,8 @@ def get_token():
 @bp.route('tokens', methods=['DELETE'])
 @token_auth.login_required
 def revoke_token():
+    """Client can invalidate a token by sending a delete request
+    """
     g.current_user.revoke_token()
     db.session.commit()
     return '', 204

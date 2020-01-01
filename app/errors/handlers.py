@@ -1,10 +1,13 @@
-# TODO: #12 Add error handling to the web app
 from flask import render_template, request
 from app import db_relational as db
 from app.errors import bp
 from app.api.errors import error_response as api_error_response
 
+# TODO: #12 Add error handling to the web app
+
 def wants_json_response():
+    """Checks the clients preference for json and html data formats
+    """
     return request.accept_mimetypes['application/json'] >= \
         request.accept_mimetypes['text/html']
 

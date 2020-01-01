@@ -60,6 +60,8 @@ class User(UserMixin, db.Model):
             self.set_password(data['password'])
 
     def get_token(self, expires_in=3600):
+        """Returns a randomly string token to the user
+        """
         now = datetime.utcnow()
         if self.token and self.token_expiration > now + timedelta(seconds=60):
             return self.token
@@ -69,10 +71,14 @@ class User(UserMixin, db.Model):
         return self.token
 
     def revoke_token(self):
+        """Make a token assigned to user invalid
+        """
         self.token_expiration = datetime.utcnow() - timedelta(seconds=1)
 
     @staticmethod
     def check_token(token):
+        """Finds the user of the given token
+        """
         user = User.query.filter_by(token=token).first()
         if user is None or user.token_expiration < datetime.utcnow():
             return None
