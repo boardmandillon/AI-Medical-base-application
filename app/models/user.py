@@ -1,8 +1,9 @@
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
 import base64
 from datetime import datetime, timedelta
 import os
+
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db_relational as db, login
 
@@ -15,6 +16,8 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
+    # TODO: #23 Seperate admin users and regular users
+    # user_role = db.Column(db.String(40))
 
     def __repr__(self):
         """Return print information about the user in a
@@ -83,6 +86,7 @@ class User(UserMixin, db.Model):
         if user is None or user.token_expiration < datetime.utcnow():
             return None
         return user        
+
 
 @login.user_loader
 def load_user(_id):

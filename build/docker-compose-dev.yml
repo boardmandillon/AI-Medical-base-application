@@ -1,0 +1,46 @@
+version: '3.3'
+services:
+    mongo:
+        image: "mongo:latest"
+        ports:
+            - "27017:27017"
+        environment:
+#            MONGO_INITDB_ROOT_USERNAME: user
+#            MONGO_INITDB_ROOT_PASSWORD: password
+            MONGO_INITDB_DATABASE: vultureMongo
+        networks:
+            - vulture-dev
+        deploy:
+            restart_policy:
+                condition: on-failure
+                delay: 5s
+                max_attempts: 3
+                window: 120s
+        volumes:
+            - mongo-datavolume:/data/db/
+
+    postgres:
+        image: "postgres:latest"
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: vulturePostgres
+        networks:
+            - vulture-dev
+        deploy:
+            restart_policy:
+                condition: on-failure
+                delay: 5s
+                max_attempts: 3
+                window: 120s
+        volumes:
+            - postgres-datavolume:/var/lib/postgresql
+
+volumes:
+    mongo-datavolume:
+    postgres-datavolume:
+
+networks:
+    vulture-dev:
