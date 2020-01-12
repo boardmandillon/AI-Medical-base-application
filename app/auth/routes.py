@@ -4,7 +4,7 @@ from werkzeug.urls import url_parse
 
 from app import db_relational
 from app.auth import bp
-from app.models import User
+from app.models.user import User
 from app.auth.forms import LoginForm, RegistrationForm
 
 
@@ -46,19 +46,17 @@ def register():
         form = RegistrationForm()
 
         if form.validate_on_submit():
-            user = User()
-            user.email = form.email.data
-            user.name = form.name.data
+            user = User(name=form.name.data, email=form.email.data)
             user.set_password(form.password.data)
 
-            db_relational.add(user)
-            db_relational.commit()
+            db_relational.session.add(user)
+            db_relational.session.commit()
 
-            flash('Welcome {}'.format(user.name))
+            flash('You are now a registered user')
 
             return redirect(url_for('auth.login'))
         else:
-            render_template(
+            return render_template(
                 'auth/register.html', title='Register', form=form)
 
 

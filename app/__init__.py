@@ -3,12 +3,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
+from flask_mongoengine import MongoEngine
 
 from config import Config
 
 db_relational = SQLAlchemy()
-# TODO: #17 Add MongoDB to web app
-# mongo = ...
+db_mongo = MongoEngine()
 migrate = Migrate()
 login = LoginManager()
 login.login_view = 'auth.login'
@@ -28,6 +28,7 @@ def create_app(config_class=Config):
     # Initiate app components
     db_relational.init_app(app)
     migrate.init_app(app, db_relational)
+    db_mongo.init_app(app)
     login.init_app(app)
     bootstrap.init_app(app)
 
@@ -49,6 +50,3 @@ def create_app(config_class=Config):
         pass  # Nothing to set up at the moment so pass
 
     return app
-
-
-from app import models

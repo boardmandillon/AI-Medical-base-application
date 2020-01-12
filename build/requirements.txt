@@ -7,6 +7,8 @@ flask-testing
 flask-sqlalchemy
 flask-migrate
 flask-login
-python-dotenv
-httpie
+flask-mongoengine
 flask-httpauth
+python-dotenv
+psycopg2-binary
+httpie

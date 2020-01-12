@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo
-from app.models import User
+from app.models.user import User
 
 
 class LoginForm(FlaskForm):
@@ -15,14 +15,13 @@ class LoginForm(FlaskForm):
 class RegistrationForm(FlaskForm):
     """Web form for registering as a user."""
     email = StringField('Email', validators=[DataRequired(), Email()])
-    name = StringField('Name', validators=[DataRequired])
+    name = StringField('Name', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     password_confirm = PasswordField(
         'Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Register')
 
-    @staticmethod
-    def validate_username(email):
+    def validate_email(self, email):
         """Check no other user is using the given email."""
         user = User.query.filter_by(email=email.data).first()
         if user is not None:

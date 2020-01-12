@@ -1,4 +1,4 @@
-from app import create_app, db_relational
+from app import create_app, db_relational, db_mongo
 
 app = create_app()
 
@@ -7,4 +7,5 @@ app = create_app()
 def make_shell_context():
     return {
         'db_relational': db_relational,
+        'db_mongo': db_mongo,
     }
