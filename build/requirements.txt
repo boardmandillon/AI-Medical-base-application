@@ -12,3 +12,5 @@ flask-httpauth
 python-dotenv
 psycopg2-binary
 httpie
+gunicorn
+rq

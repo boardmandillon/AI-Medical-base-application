@@ -2,10 +2,12 @@ import base64
 from datetime import datetime, timedelta
 import os
 
+from flask import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db_relational as db, login
+from app.models.task import Task
 
 
 class User(UserMixin, db.Model):
@@ -16,6 +18,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
+    tasks = db.relationship('Task', backref='user', lazy='dynamic')
     # TODO: #23 Seperate admin users and regular users
     # user_role = db.Column(db.String(40))
 
@@ -85,7 +88,36 @@ class User(UserMixin, db.Model):
         user = User.query.filter_by(token=token).first()
         if user is None or user.token_expiration < datetime.utcnow():
             return None
-        return user        
+        return user
+
+    def launch_task(self, name, description, *args, **kwargs):
+        """Queue a task on Redis.
+
+        :param name: Function name of the task given as an import string
+            starting from the app directory.
+        :param description: Description of the task.
+        """
+        rq_job = current_app.task_queue.enqueue(
+            'app.' + name, self.id, *args, **kwargs)
+
+        task = Task(
+            id=rq_job.get_id(), name=name, description=description, user=self)
+        db.session.add(task)
+
+        return task
+
+    def get_tasks_in_progress(self):
+        """Fetch all Redis tasks that are currently in progress."""
+        return Task.query.filter_by(user=self, complete=False).all()
+
+    def get_task_in_progress(self, name):
+        """Fetch all Redis tasks with the given name that are currently
+        in progress.
+
+        :param name: Name of the task.
+        """
+        return Task.query.filter_by(
+            name=name, user=self, complete=False).first()
 
 
 @login.user_loader

@@ -4,6 +4,8 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
 from flask_mongoengine import MongoEngine
+from redis import Redis
+import rq
 
 from config import Config
 
@@ -31,6 +33,9 @@ def create_app(config_class=Config):
     db_mongo.init_app(app)
     login.init_app(app)
     bootstrap.init_app(app)
+
+    app.redis = Redis.from_url(app.config['REDIS_URL'])
+    app.task_queue = rq.Queue('vulture-tasks', connection=app.redis)
 
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)

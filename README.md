@@ -6,9 +6,18 @@ This includes the web and mobile app as well as the server and database.
 ## Prerequisites
 
 The following needs to be installed in order to run the application:
-* Python3
+* Python3 
+    
+    The following versions have been tested: 3.7
 * [Docker](https://docs.docker.com/install/)
 * [Docker-composer](https://docs.docker.com/compose/install/)
+
+#### Required packages
+
+The following command must be run to make sure you have all the required 
+packages:
+
+`sudo apt-get install redis-server`
 
 ## Setting up the dev environment
 
@@ -77,3 +86,8 @@ Then start the server:
 Visit the following URL in your browser:
 
 `http://127.0.0.1:5000/`
+
+#### Start the Redis workers
+Start Redis workers to listen to the Redis queue with the following command:
+
+`rq worker vulture-tasks`

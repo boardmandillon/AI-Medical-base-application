@@ -20,3 +20,5 @@ class Config(object):
     MONGODB_PORT = os.environ.get('MONGODB_PORT', 27017)
     # MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', 'user')
     # MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', 'password')
+
+    REDIS_URL = os.environ.get('REDIS_URL', 'redis://')
