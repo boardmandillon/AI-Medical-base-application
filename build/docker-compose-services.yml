@@ -1,33 +1,14 @@
 version: '3.3'
 services:
-    vulture-api:
-        build: ../
-        ports:
-            - "5000:5000"
-        deploy:
-            restart_policy:
-                condition: on-failure
-                delay: 5s
-                max_attempts: 3
-                window: 120s
-        networks:
-            - vulture-dev
-        depends_on:
-            - "mongo"
-            - "postgres"
-            - "redis"
-        volumes:
-            - .:/base-application
-
     mongo:
-        image: "mongo:latest"
+        image: "mongo:4.2.2"
         ports:
             - "27017:27017"
         environment:
 #            MONGO_INITDB_ROOT_USERNAME: user
 #            MONGO_INITDB_ROOT_PASSWORD: password
             MONGO_INITDB_DATABASE: vultureMongo
-tr        networks:
+        networks:
             - vulture-dev
         deploy:
             restart_policy:
@@ -39,7 +20,7 @@ tr        networks:
             - mongo-datavolume:/data/db/
 
     postgres:
-        image: "postgres:latest"
+        image: "postgres:12.1"
         ports:
             - "5432:5432"
         environment:

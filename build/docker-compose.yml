@@ -1,7 +1,7 @@
 version: '3.3'
 services:
     vulture-api:
-        build: ../
+        image: "registry.gitlab.com/comp3931-vulture/base-application"
         ports:
             - "5000:5000"
         deploy:
@@ -16,8 +16,6 @@ services:
             - "mongo"
             - "postgres"
             - "redis"
-        volumes:
-            - .:/base-application
 
     mongo:
         image: "mongo:latest"
@@ -27,7 +25,7 @@ services:
 #            MONGO_INITDB_ROOT_USERNAME: user
 #            MONGO_INITDB_ROOT_PASSWORD: password
             MONGO_INITDB_DATABASE: vultureMongo
-tr        networks:
+        networks:
             - vulture-dev
         deploy:
             restart_policy:
@@ -79,3 +77,4 @@ volumes:
 
 networks:
     vulture-dev:
+
