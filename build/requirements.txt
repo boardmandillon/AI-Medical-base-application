@@ -13,7 +13,7 @@ python-dotenv
 psycopg2-binary
 httpie
 gunicorn
-rq
 sklearn
 pandas
+redis
 celery

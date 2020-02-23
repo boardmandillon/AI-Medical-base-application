@@ -22,3 +22,5 @@ class Config(object):
     # MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', 'password')
 
     REDIS_URL = os.environ.get('REDIS_URL', 'redis://')
+    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://')
+    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://')

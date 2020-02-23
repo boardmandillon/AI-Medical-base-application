@@ -87,7 +87,7 @@ Visit the following URL in your browser:
 
 `http://127.0.0.1:5000/`
 
-#### Start the Redis workers
-Start Redis workers to listen to the Redis queue with the following command:
+#### Start the Celery workers
+Start Celery workers to listen to the Redis queue with the following command:
 
-`rq worker vulture-tasks`
+`celery worker -A app.celery --loglevel=info`
