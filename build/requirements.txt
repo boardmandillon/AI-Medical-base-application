@@ -14,3 +14,6 @@ psycopg2-binary
 httpie
 gunicorn
 rq
+sklearn
+pandas
+celery

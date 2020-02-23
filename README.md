@@ -31,7 +31,7 @@ application can run from one command.
 Make sure Docker and Docker-compose are installed and then run the following 
 command replacing <path_to_code_checkout>:
 
-`docker-compose -f <path_to_code_checkout>/build/docker-compose-dev.yml up`
+`docker-compose -f <path_to_code_checkout>/build/docker-compose-services.yml up`
 
 Persistent volumes are used to keep the data even if the Docker containers are 
 removed.
