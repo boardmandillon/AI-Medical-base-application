@@ -11,9 +11,8 @@ from app.machine_learning.example_project.example_project import ExampleProject
 def example_create():
     """Creates diagnosis from JSON data in the request."""
     data = request.form.to_dict() or {}
-    example_project = ExampleProject()
 
-    return example_project.predict(data, g.current_user).to_json()
+    return ExampleProject.predict(data, g.current_user).to_json()
 
 
 @bp.route('/example/<doc_id>')

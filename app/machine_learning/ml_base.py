@@ -41,15 +41,27 @@ class MLBase(object):
 
         self._load_ml_model()
 
-    def _save_ml_model(self, ml_model):
+    def _save_ml_model(self, doc_id=None, ml_model=None, training=False):
         """Save the machine learning model to MongoDB as a binary file."""
+        if doc_id:
+            print("{} | Updating the existing ML model: {}...".format(
+                self.project_name, doc_id))
 
-        print("{} | Saving the new ML model...".format(self.project_name))
+            model = MLModel.objects(id=doc_id)
+            model.date_modified = datetime.datetime.utcnow()
+        else:
+            print("{} | Saving the new ML model...".format(self.project_name))
 
-        new_model = MLModel(project_name=self.project_name)
+            model = MLModel()
 
-        new_model.ml_model.put(pickle.dumps(ml_model))
-        new_model.save()
+        model.project_name = self.project_name
+        model.training = training
+
+        if ml_model:
+            model.ml_model.put(pickle.dumps(ml_model))
+            model.save()
+
+        return model
 
     def train(self, *args, **kwargs):
         """Function to be implemented by the specific machine learning
@@ -113,6 +125,18 @@ class MLBase(object):
                                     self.HOURS_BETWEEN_CHECKS))
 
             self._load_ml_model()
+
+    def _check_if_ml_model_is_already_training(self):
+        """Checks and returns whether a machine learning model is currently
+        being trained.
+        """
+        model = MLModel.objects.filter(
+            project_name=self.project_name).order_by('-date_modified').first()
+
+        print("{} | The latest machine learning model is training: {}".format(
+            self.project_name, model.training))
+
+        return model.training
 
     def prepare_data(self, data, ignore_unclassified=True):
         """Prepares the data for training/predictions.
