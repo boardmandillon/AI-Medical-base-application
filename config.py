@@ -19,6 +19,7 @@ class Config(object):
     MONGODB_DB = os.environ.get('MONGODB_DATABASE', 'vultureMongo')
     MONGODB_HOST = os.environ.get('MONGODB_HOST', 'localhost')
     MONGODB_PORT = os.environ.get('MONGODB_PORT', 27017)
+    MONGODB_CONNECT = False
     # MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', 'user')
     # MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', 'password')
 
@@ -28,6 +29,6 @@ class Config(object):
     CELERYBEAT_SCHEDULE = {
         'example_project_train': {
             'task': 'example_project_train',
-            'schedule': timedelta(seconds=20),
+            'schedule': timedelta(days=1),
         }
     }
