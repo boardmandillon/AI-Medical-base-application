@@ -70,6 +70,20 @@ services:
         volumes:
             - redis-datavolume:/data
 
+    celery:
+        image: "registry.gitlab.com/comp3931-vulture/base-application"
+        command: celery worker -A celery_worker.celery -l info
+        networks:
+            - vulture-dev
+        deploy:
+            restart_policy:
+                condition: on-failure
+                delay: 5s
+                max_attempts: 3
+                window: 120s
+        volumes:
+            - .:/base-application
+
 volumes:
     mongo-datavolume:
     postgres-datavolume:

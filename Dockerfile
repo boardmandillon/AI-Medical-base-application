@@ -12,8 +12,9 @@ RUN adduser -D vulture
 WORKDIR /home/vulture
 
 # Install dependencies
+RUN echo "@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 RUN \
-    apk update && \
+    apk add --update --no-cache py3-numpy py3-pandas@testing && \
     apk add --no-cache postgresql-libs && \
     apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev
 

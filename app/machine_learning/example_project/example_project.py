@@ -1,26 +1,25 @@
-from datetime import datetime
 import json
 
 from app.models.projects.example_model import ExampleModel
 from app.machine_learning.decision_tree import DecisionTree
 from app import celery
 
-PROJECT_NAME = "ExampleProject"
-LABELS = {
-    'mammal': 0,
-    'reptile': 1,
-}
-
 
 class ExampleProject:
-    """Example AI class to use when defining your own."""
+    """Example machine learning project class to use when defining your own."""
+
+    PROJECT_NAME = "ExampleProject"
+    LABELS = {
+        'mammal': 0,
+        'reptile': 1,
+    }
 
     @staticmethod
     def _save_data(data, current_user):
         """Save the passed in data to MongoDB."""
 
         print("{} | Saving a new model with the data: {}".format(
-            PROJECT_NAME, data))
+            ExampleProject.PROJECT_NAME, data))
 
         model = ExampleModel(user_id=current_user.id, **data)
         model.save()
@@ -56,6 +55,11 @@ class ExampleProject:
 
         return model
 
+    @staticmethod
+    def get_possible_labels():
+        """Returns the possible labels as a dict."""
+        return ExampleProject.LABELS
+
 
 @celery.task
 def make_prediction(doc_id, data):
@@ -70,17 +74,16 @@ def make_prediction(doc_id, data):
     :type data: dict
     """
     classifier = DecisionTree(
-        PROJECT_NAME, ExampleModel, LABELS)
+        ExampleProject.PROJECT_NAME, ExampleModel, ExampleProject.LABELS)
 
     prediction = classifier.predict(json.loads(data))
 
     if prediction:
         print("{} | Updating document '{}' with prediction: '{}'".format(
-            PROJECT_NAME, doc_id, prediction))
+            ExampleProject.PROJECT_NAME, doc_id, prediction))
 
         ExampleModel.objects.get(id=doc_id).update(
             set__t_species=prediction,
-            set__date_modified=datetime.utcnow(),
         )
 
 
@@ -89,5 +92,6 @@ def train_classifier():
     """"Periodic Celery task for retraining the ML model if the data has
     changed.
     """
-    classifier = DecisionTree(PROJECT_NAME, ExampleModel, LABELS)
+    classifier = DecisionTree(
+        ExampleProject.PROJECT_NAME, ExampleModel, ExampleProject.LABELS)
     classifier.train()

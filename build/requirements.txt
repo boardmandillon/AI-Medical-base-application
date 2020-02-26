@@ -15,5 +15,6 @@ httpie
 gunicorn
 sklearn
 pandas
+numpy
 redis
 celery

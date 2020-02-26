@@ -1,5 +1,3 @@
-import datetime
-
 from app import db_mongo as db
 
 
@@ -22,8 +20,6 @@ class ProjectBase(db.Document):
     project_id = db.IntField(required=True)
 
     # Automatically created fields
-    date_created = db.DateTimeField(default=datetime.datetime.utcnow)
-    date_modified = db.DateTimeField(default=datetime.datetime.utcnow)
     index = db.IntField()
 
     meta = {
@@ -33,5 +29,5 @@ class ProjectBase(db.Document):
             'index',
         ],
         'auto_create_index': True,
-        'ordering': ['-date_modified'],
+        'ordering': ['-id.generation_time'],
     }

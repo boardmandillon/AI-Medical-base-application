@@ -27,7 +27,7 @@ services:
 #            MONGO_INITDB_ROOT_USERNAME: user
 #            MONGO_INITDB_ROOT_PASSWORD: password
             MONGO_INITDB_DATABASE: vultureMongo
-tr        networks:
+        networks:
             - vulture-dev
         deploy:
             restart_policy:
@@ -71,6 +71,20 @@ tr        networks:
                 window: 120s
         volumes:
             - redis-datavolume:/data
+
+    celery:
+        build: ../
+        command: celery worker -A celery_worker.celery -l info
+        networks:
+            - vulture-dev
+        deploy:
+            restart_policy:
+                condition: on-failure
+                delay: 5s
+                max_attempts: 3
+                window: 120s
+        volumes:
+            - .:/base-application
 
 volumes:
     mongo-datavolume:

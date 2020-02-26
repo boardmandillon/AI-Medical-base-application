@@ -47,8 +47,7 @@ class MLBase(object):
             print("{} | Updating the existing ML model: {}...".format(
                 self.project_name, doc_id))
 
-            model = MLModel.objects(id=doc_id)
-            model.date_modified = datetime.datetime.utcnow()
+            model = MLModel.objects(id=doc_id).get()
         else:
             print("{} | Saving the new ML model...".format(self.project_name))
 
@@ -59,7 +58,8 @@ class MLBase(object):
 
         if ml_model:
             model.ml_model.put(pickle.dumps(ml_model))
-            model.save()
+
+        model.save()
 
         return model
 
@@ -72,18 +72,18 @@ class MLBase(object):
     def _load_ml_model(self):
         """Load the latest machine learning model."""
         model = MLModel.objects.filter(
-            project_name=self.project_name).order_by(
-                '-date_modified').first()
+            project_name=self.project_name, training=False).order_by(
+                '-id.generation_time').first()
 
         if model:
             if not self.ml_model or \
-                    model.date_modified > self.ml_model_date_modified:
+                    model.id.generation_time > self.ml_model_date_modified:
 
                 print("{} | New machine learning model found, loading..."
                       "".format(self.project_name))
 
                 self.ml_model = pickle.loads(model.ml_model.read())
-                self.ml_model_date_modified = model.date_modified
+                self.ml_model_date_modified = model.id.generation_time
 
                 print("{} | Machine learning model loaded".format(
                     self.project_name))
@@ -128,15 +128,20 @@ class MLBase(object):
 
     def _check_if_ml_model_is_already_training(self):
         """Checks and returns whether a machine learning model is currently
-        being trained.
+        being trained. If no models are found False is returned.
         """
+        training = False
+
         model = MLModel.objects.filter(
-            project_name=self.project_name).order_by('-date_modified').first()
+            project_name=self.project_name).order_by(
+                '-id.generation_time').first()
 
-        print("{} | The latest machine learning model is training: {}".format(
-            self.project_name, model.training))
+        if model:
+            training = model.training
+            print("{} | The latest machine learning model is training: {}"
+                  "".format(self.project_name, training))
 
-        return model.training
+        return training
 
     def prepare_data(self, data, ignore_unclassified=True):
         """Prepares the data for training/predictions.
