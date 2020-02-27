@@ -13,7 +13,7 @@ def create_user():
     """Create user accounts using api stores email and password
     into database.
     """
-    data = request.get_json() or {}
+    data = request.form.to_dict() or {}
 
     if not data.get('email') or not data.get('password'):
         return bad_request('must include email and password fields')
