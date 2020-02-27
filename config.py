@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from datetime import timedelta
+from celery.schedules import crontab
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
@@ -29,6 +29,6 @@ class Config(object):
     CELERYBEAT_SCHEDULE = {
         'example_project_train': {
             'task': 'example_project_train',
-            'schedule': timedelta(days=1),
+            'schedule': crontab(minute=0, hour=0),
         }
     }
