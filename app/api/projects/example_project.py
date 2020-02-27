@@ -4,8 +4,8 @@ import json
 
 from app.api import bp
 from app.api.auth import token_auth
-from app.models.projects.example_model import ExampleModel
-from app.machine_learning.example_project.example_project import ExampleProject
+from app.projects.example_project.example_model import ExampleModel
+from app.projects.example_project.example_project import ExampleProject
 
 
 @bp.route('/example/', methods=['POST'])
@@ -52,4 +52,4 @@ def example_update(doc_id):
 @token_auth.login_required
 def example_labels_get():
     """Retrieves the possible labels which the data might be given."""
-    return json.dumps(ExampleProject.get_possible_labels())
+    return json.dumps(ExampleModel.possible_labels)

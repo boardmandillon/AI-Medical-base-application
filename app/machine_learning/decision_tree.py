@@ -1,7 +1,7 @@
 from sklearn.tree import DecisionTreeClassifier
 import pandas as pd
 
-from app.machine_learning.ml_base import MLBase
+from app.machine_learning.ml_base.ml_base import MLBase
 
 
 class DecisionTree(MLBase):
@@ -52,6 +52,8 @@ class DecisionTree(MLBase):
                 print("{} | Fitting model...".format(self.project_name))
 
                 self.ml_model.fit(ml_data, label_values)
+
+                print("{} | Model fitted".format(self.project_name))
 
                 self._save_ml_model(doc_id=model.id, ml_model=self.ml_model)
         else:

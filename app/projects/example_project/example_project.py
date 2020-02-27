@@ -1,6 +1,6 @@
 import json
 
-from app.models.projects.example_model import ExampleModel
+from app.projects.example_project.example_model import ExampleModel
 from app.machine_learning.decision_tree import DecisionTree
 from app import celery
 
@@ -9,10 +9,6 @@ class ExampleProject:
     """Example machine learning project class to use when defining your own."""
 
     PROJECT_NAME = "ExampleProject"
-    LABELS = {
-        'mammal': 0,
-        'reptile': 1,
-    }
 
     @staticmethod
     def _save_data(data, current_user):
@@ -55,13 +51,8 @@ class ExampleProject:
 
         return model
 
-    @staticmethod
-    def get_possible_labels():
-        """Returns the possible labels as a dict."""
-        return ExampleProject.LABELS
 
-
-@celery.task
+@celery.task(name='example_project_predict')
 def make_prediction(doc_id, data):
     """Celery task to calculate the prediction for the data from the
     classifier and update the stored prediction for the document with
@@ -74,7 +65,8 @@ def make_prediction(doc_id, data):
     :type data: dict
     """
     classifier = DecisionTree(
-        ExampleProject.PROJECT_NAME, ExampleModel, ExampleProject.LABELS)
+        ExampleProject.PROJECT_NAME, ExampleModel,
+        ExampleModel.possible_labels)
 
     prediction = classifier.predict(json.loads(data))
 
@@ -93,5 +85,7 @@ def train_classifier():
     changed.
     """
     classifier = DecisionTree(
-        ExampleProject.PROJECT_NAME, ExampleModel, ExampleProject.LABELS)
+        ExampleProject.PROJECT_NAME, ExampleModel,
+        ExampleModel.possible_labels)
+
     classifier.train()

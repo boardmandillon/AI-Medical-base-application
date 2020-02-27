@@ -2,7 +2,8 @@ from flask import request, g
 
 from app.api import bp
 from app.api.auth import token_auth
-from app.models.projects.urine_dipstick_analysis import UrineDipstickAnalysis
+from app.projects.urine_dipstick_analysis.urine_dipstick_analysis import \
+    UrineDipstickAnalysis
 
 
 @bp.route('/urine_dipstick_analysis/', methods=['POST'])

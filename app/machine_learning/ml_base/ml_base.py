@@ -14,6 +14,7 @@ class MLBase(object):
 
     project_name = None
     db_model = None  # Model in the database to use
+    labels = None  # Possible labels for the data
     ml_model_date_modified = None  # Database ID of the current ML model
     ml_model = None  # Current machine learning model being used
     ml_data = None  # Data used for training fetched from the database
@@ -60,6 +61,8 @@ class MLBase(object):
             model.ml_model.put(pickle.dumps(ml_model))
 
         model.save()
+
+        print("{} | Model saved".format(self.project_name))
 
         return model
 

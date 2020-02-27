@@ -1,4 +1,4 @@
-from app.models.projects.project_base import ProjectBase
+from app.models.project_base import ProjectBase
 from app import db_mongo as db
 
 
