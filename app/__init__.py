@@ -48,6 +48,9 @@ def create_app(config_class=Config):
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
 
+    from app.commands import ml
+    app.register_blueprint(ml)
+
     # Initialise the app components we do not want when testing
     if not app.debug and not app.testing:
         # TODO: #16 Implement logging in the web app
