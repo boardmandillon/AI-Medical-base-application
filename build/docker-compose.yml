@@ -1,7 +1,7 @@
 version: '3.3'
 services:
     vulture-api:
-        build: ../
+        image: "registry.gitlab.com/comp3931-vulture/base-application"
         ports:
             - "5000:5000"
         deploy:
@@ -16,8 +16,6 @@ services:
             - "mongo"
             - "postgres"
             - "redis"
-        volumes:
-            - .:/base-application
 
     mongo:
         image: "mongo:latest"
@@ -73,7 +71,7 @@ services:
             - redis-datavolume:/data
 
     celery:
-        build: ../
+        image: "registry.gitlab.com/comp3931-vulture/base-application"
         command: celery worker -A celery_worker.celery -l info
         networks:
             - vulture-dev
@@ -93,3 +91,4 @@ volumes:
 
 networks:
     vulture-dev:
+

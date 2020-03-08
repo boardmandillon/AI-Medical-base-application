@@ -12,3 +12,9 @@ flask-httpauth
 python-dotenv
 psycopg2-binary
 httpie
+gunicorn
+sklearn
+pandas
+numpy
+redis
+celery

@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
@@ -18,5 +19,16 @@ class Config(object):
     MONGODB_DB = os.environ.get('MONGODB_DATABASE', 'vultureMongo')
     MONGODB_HOST = os.environ.get('MONGODB_HOST', 'localhost')
     MONGODB_PORT = os.environ.get('MONGODB_PORT', 27017)
+    MONGODB_CONNECT = False
     # MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', 'user')
     # MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', 'password')
+
+    REDIS_URL = os.environ.get('REDIS_URL', 'redis://')
+    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://')
+    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://')
+    CELERYBEAT_SCHEDULE = {
+        'example_project_train': {
+            'task': 'example_project_train',
+            'schedule': crontab(minute=0, hour=0),
+        }
+    }
