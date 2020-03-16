@@ -5,6 +5,11 @@ from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
 from flask_mongoengine import MongoEngine
 from celery import Celery
+import logging
+from logging.handlers import RotatingFileHandler
+
+import os
+from datetime import datetime
 
 from config import Config
 
@@ -26,6 +31,29 @@ def create_app(config_class=Config):
     # Initiate Flask app and config
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    # Configure logging
+    if app.config['LOG_TO_STDOUT']:
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(logging.INFO)
+        app.logger.addHandler(stream_handler)
+    else:
+        if not os.path.exists('logs'):
+            os.mkdir('logs')
+
+        file_handler = RotatingFileHandler(
+            'logs/' + datetime.now().strftime(
+                'base-application_%H_%M_%S_%d_%m_%Y.log'),
+            maxBytes=10240, backupCount=10)
+        file_handler.setFormatter(logging.Formatter(
+            '%(asctime)s %(levelname)s: %(message)s '
+            '[in %(pathname)s:%(lineno)d]'))
+
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
+        app.logger.setLevel(logging.INFO)
+
+    app.logger.info('Base-application startup')
 
     # Initiate app components
     db_relational.init_app(app)
@@ -50,10 +78,5 @@ def create_app(config_class=Config):
 
     from app.commands import ml
     app.register_blueprint(ml)
-
-    # Initialise the app components we do not want when testing
-    if not app.debug and not app.testing:
-        # TODO: #16 Implement logging in the web app
-        pass  # Nothing to set up at the moment so pass
 
     return app
