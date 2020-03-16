@@ -17,7 +17,6 @@ class ProjectBase(db.Document):
         They should be denoted by appending 'ml_' to their field names.
     """
     user_id = db.IntField(required=True)
-    project_id = db.IntField(required=True)
 
     # Automatically created fields
     index = db.IntField()
