@@ -79,14 +79,16 @@ class DecisionTree(MLBase):
             app.logger.warning(
                 'No machine learning models found for project: {}'.format(
                     self.project_name))
+            return
 
         data, label_field = self.prepare_data(
             data, ignore_unclassified=False)
 
         if not data:
             app.logger.info(
-                "{} | No data valid data found to make a prediction".format(
+                "{} | Data is not in the correct format".format(
                     self.project_name))
+            return
 
         # Normalise the data and separate the target field
         data = pd.json_normalize(data)

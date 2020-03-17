@@ -78,9 +78,15 @@ def make_prediction(doc_id, data):
             "{} | Updating document '{}' with prediction: '{}'".format(
                 ExampleProject.PROJECT_NAME, doc_id, prediction))
 
-        ExampleModel.objects.get(id=doc_id).update(
-            set__t_species=prediction,
-        )
+        target_info = ""
+    else:
+        prediction = ""
+        target_info = 'An error has occurred, unable to make a prediction'
+
+    ExampleModel.objects.get(id=doc_id).update(
+        set__t_species=prediction,
+        set__target_info=target_info,
+    )
 
 
 @celery.task(name='example_project_train')
