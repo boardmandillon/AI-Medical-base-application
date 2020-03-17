@@ -24,8 +24,8 @@ services:
         ports:
             - "5432:5432"
         environment:
-            POSTGRES_USER: user
-            POSTGRES_PASSWORD: password
+            POSTGRES_USER: vulture
+            POSTGRES_PASSWORD: vultureF5MB
             POSTGRES_DB: vulturePostgres
         networks:
             - vulture-dev
