@@ -1,7 +1,6 @@
 # AI Medical base application
 
 The base of our final year project that we will be working off of later on.
-This includes the web and mobile app as well as the server and database.
 
 ## Prerequisites
 
@@ -12,16 +11,56 @@ The following needs to be installed in order to run the application:
 * [Docker](https://docs.docker.com/install/)
 * [Docker-composer](https://docs.docker.com/compose/install/)
 
+## Deploying the application
+
+The Flask server and all dependencies can be run without having access to the 
+code. This is done by using the Docker images stored on our remote Docker 
+repository.
+
+Run the following command replacing <path_to_code_checkout>:
+
+`docker-compose -f <path_to_code_checkout>/build/docker-compose.yml up`
+
+Alternatively the docker-compose.yml file can be copied separately from the 
+rest of the code checkout, in which case the absolute path to the 
+Docker-compose file should be supplied in place of the -f argument.
+
+---
+
+**Note:** 
+
+Our remote Docker repository is at:
+https://gitlab.com/comp3931-vulture/base-application/container_registry/
+
+---
+
+## Working on the application
+
+The Flask server can be run using docker-compose by mounting the code checkout 
+in the Docker container. Changes to the code are automatically copied into the
+deployed Docker containers. This allows developers to work on the application
+without having to worry about the environment they are using and any 
+dependencies the service has.
+
+Run the following command replacing <path_to_code_checkout>:
+
+`docker-compose -f <path_to_code_checkout>/build/docker-compose-dev.yml up`
+
+## Running the Flask server manually
+
+The Flask server and Celery can be run separately from the dependencies, 
+which can be run using Docker-compose.
+
+### Setting up the dev environment
+
+Start the instructions from the same directory as this README.
+
 #### Required packages
 
 The following command must be run to make sure you have all the required 
 packages:
 
 `sudo apt-get install redis-server`
-
-## Setting up the dev environment
-
-Start the instructions from the same directory as this README.
 
 #### MongoDB and PostgreSQL
 
@@ -36,7 +75,7 @@ command replacing <path_to_code_checkout>:
 Persistent volumes are used to keep the data even if the Docker containers are 
 removed.
 
-## Running the web application
+### Running the web application
 
 Start the instructions from the same directory as this README.
 
@@ -84,8 +123,12 @@ Then start the server:
 `flask run --port 5000`
 
 ---
-**Note:** The host of the flask server can be specified using the `--host` 
-flag. Set this as `0.0.0.0` to use the machines IP address.
+
+**Note:** 
+
+The host of the flask server can be specified using the `--host` flag. 
+Set this as `0.0.0.0` to use the machines IP address.
+
 --- 
 
 Visit the following URL in your browser:
@@ -102,3 +145,15 @@ Start Celery beat for sending scheduled tasks to the Redis queue with the
 following command:
 
 `celery beat -A celery_worker.celery --loglevel=info`
+
+## Removing a Docker-compose deployment
+
+See the Docker-compose CLI docs: https://docs.docker.com/compose/reference/overview/
+
+Use the Docker-compose down command to remove a deployment. 
+
+This might not delete all volumes however. If this is the case you can view 
+all volumes manually using `docker volume list` and then delete them 
+individually using:
+ 
+`docker volume rm <volume_ids>`
