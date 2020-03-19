@@ -7,11 +7,15 @@ from flask_mongoengine import MongoEngine
 from celery import Celery
 import logging
 from logging.handlers import RotatingFileHandler
+from flask_admin import Admin
+# from flask_admin.menu import MenuLink
+from flask_admin.contrib.sqla import ModelView
 
 import os
 from datetime import datetime
 
 from config import Config
+# from app.admin import AdminModelView
 
 db_relational = SQLAlchemy()
 db_mongo = MongoEngine()
@@ -20,6 +24,7 @@ login = LoginManager()
 login.login_view = 'auth.login'
 bootstrap = Bootstrap()
 celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
+admin = Admin(name='Vulture', template_mode='bootstrap3')
 
 
 def create_app(config_class=Config):
@@ -61,6 +66,7 @@ def create_app(config_class=Config):
     db_mongo.init_app(app)
     login.init_app(app)
     bootstrap.init_app(app)
+    admin.init_app(app)
 
     celery.conf.update(app.config)
 
@@ -78,5 +84,10 @@ def create_app(config_class=Config):
 
     from app.commands import ml
     app.register_blueprint(ml)
+
+    # Iniatiate admin interface
+    from app.models.user import User
+    admin.add_view(ModelView(User, db_relational.session))
+    # admin.add_link(MenuLink(name='Logout', url='/auth/logout'))  # Using a hardcoded url
 
     return app
