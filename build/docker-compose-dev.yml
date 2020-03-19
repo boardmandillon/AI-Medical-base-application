@@ -10,6 +10,11 @@ services:
                 delay: 5s
                 max_attempts: 3
                 window: 120s
+        environment:
+            RELATIONAL_DB_URI: postgresql://vulture:vultureF5MB@postgres:5432/vulturePostgres
+            MONGODB_DB: vultureMongo
+            MONGODB_HOST: mongo
+            MONGODB_PORT: 27017
         networks:
             - vulture-dev
         depends_on:
@@ -43,8 +48,8 @@ services:
         ports:
             - "5432:5432"
         environment:
-            POSTGRES_USER: user
-            POSTGRES_PASSWORD: password
+            POSTGRES_USER: vulture
+            POSTGRES_PASSWORD: vultureF5MB
             POSTGRES_DB: vulturePostgres
         networks:
             - vulture-dev
@@ -83,8 +88,34 @@ services:
                 delay: 5s
                 max_attempts: 3
                 window: 120s
+        environment:
+            RELATIONAL_DB_URI: postgresql://vulture:vultureF5MB@postgres:5432/vulturePostgres
+            MONGODB_DB: vultureMongo
+            MONGODB_HOST: mongo
+            MONGODB_PORT: 27017
         volumes:
             - .:/base-application
+
+    celery-beat:
+        build: ../
+        command: celery beat -A celery_worker.celery --loglevel=info
+        networks:
+            - vulture-dev
+        deploy:
+            restart_policy:
+                condition: on-failure
+                delay: 5s
+                max_attempts: 3
+                window: 120s
+        environment:
+            RELATIONAL_DB_URI: postgresql://vulture:vultureF5MB@postgres:5432/vulturePostgres
+            MONGODB_DB: vultureMongo
+            MONGODB_HOST: mongo
+            MONGODB_PORT: 27017
+        volumes:
+            - .:/base-application
+        depends_on:
+            - "celery"
 
 volumes:
     mongo-datavolume:
