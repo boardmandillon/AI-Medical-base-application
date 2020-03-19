@@ -14,7 +14,7 @@ class Config(object):
 
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'RELATIONAL_DB_URI',
-        'postgresql://user:password@0.0.0.0:5432/vulturePostgres')
+        'postgresql://vulture:vultureF5MB@0.0.0.0:5432/vulturePostgres')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     MONGODB_DB = os.environ.get('MONGODB_DATABASE', 'vultureMongo')
