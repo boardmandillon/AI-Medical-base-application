@@ -75,7 +75,7 @@ class User(UserMixin, db.Model):
         :param new_user: Whether the user is new, if True the password field
             is set, default is False.
         """
-        for field in ['email']:
+        for field in ['email', 'name']:
             if field in data:
                 setattr(self, field, data[field])
         if new_user and 'password' in data:

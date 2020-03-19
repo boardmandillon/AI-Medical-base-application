@@ -15,8 +15,8 @@ def create_user():
     """
     data = request.form.to_dict() or {}
 
-    if not data.get('email') or not data.get('password'):
-        return bad_request('must include email and password fields')
+    if not data.get('email') or not data.get('password') or not data.get('name'):
+        return bad_request('must include email, password and name fields')
     elif User.query.filter_by(email=data['email']).first():
         return bad_request('please use a different email address')
     else:
