@@ -81,7 +81,7 @@ def make_prediction(doc_id, data):
 
 @celery.task(name='example_project_train')
 def train_classifier():
-    """"Periodic Celery task for retraining the ML model if the data has
+    """Periodic Celery task for retraining the ML model if the data has
     changed.
     """
     classifier = DecisionTree(

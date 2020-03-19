@@ -2,7 +2,7 @@ from flask import request, g
 
 from app.api import bp
 from app.api.auth import token_auth
-from app.projects.aap_diagnosis.aap_diagnosis import AAPDiagnosis
+from app.projects.aap_diagnosis.aap_diagnosis_model import AAPDiagnosis
 
 
 @bp.route('/aap_diagnosis/', methods=['POST'])
