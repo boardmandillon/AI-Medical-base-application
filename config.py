@@ -10,6 +10,7 @@ class Config(object):
     ADMINS = []
     LANGUAGES = ['en']
     SECRET_KEY = os.environ.get('SECRET_KEY', 'you-will-never-guess')
+    LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT', True)
 
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'RELATIONAL_DB_URI',
