@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -8,14 +8,13 @@ from celery import Celery
 import logging
 from logging.handlers import RotatingFileHandler
 from flask_admin import Admin
-# from flask_admin.menu import MenuLink
-from flask_admin.contrib.sqla import ModelView
+from flask_admin.menu import MenuLink
 
 import os
 from datetime import datetime
 
 from config import Config
-# from app.admin import AdminModelView
+from app.admin import AdminModelView, BaseAdminIndexView
 
 db_relational = SQLAlchemy()
 db_mongo = MongoEngine()
@@ -66,7 +65,7 @@ def create_app(config_class=Config):
     db_mongo.init_app(app)
     login.init_app(app)
     bootstrap.init_app(app)
-    admin.init_app(app)
+    admin.init_app(app, index_view=BaseAdminIndexView())
 
     celery.conf.update(app.config)
 
@@ -82,12 +81,13 @@ def create_app(config_class=Config):
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
 
-    from app.commands import ml
+    from app.commands import ml, cli_admin
     app.register_blueprint(ml)
+    app.register_blueprint(cli_admin)
 
     # Iniatiate admin interface
     from app.models.user import User
-    admin.add_view(ModelView(User, db_relational.session))
-    # admin.add_link(MenuLink(name='Logout', url='/auth/logout'))  # Using a hardcoded url
+    admin.add_view(AdminModelView(User, db_relational.session))
+    # admin.add_link(MenuLink(name='Logout', url=url_for('auth.logout')))
 
     return app
