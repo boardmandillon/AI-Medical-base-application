@@ -33,6 +33,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(40))
     email = db.Column(db.String(120), index=True, unique=True)
+    date_of_birth = db.Column(db.Date)
     password_hash = db.Column(db.String(128))
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
@@ -75,7 +76,7 @@ class User(UserMixin, db.Model):
         :param new_user: Whether the user is new, if True the password field
             is set, default is False.
         """
-        for field in ['email', 'name']:
+        for field in ['email', 'name', 'date_of_birth']:
             if field in data:
                 setattr(self, field, data[field])
         if new_user and 'password' in data:
