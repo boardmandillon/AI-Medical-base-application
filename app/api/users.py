@@ -13,7 +13,10 @@ def create_user():
     """Create user accounts using api stores email and password
     into database.
     """
-    data = request.form.to_dict() or {}
+    if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
+        data = request.form.to_dict() or {}
+    elif request.headers['Content-Type'] == 'application/json':
+        data = request.get_json() or {}
 
     if not data.get('email') or not data.get('password') or not data.get('name') \
             or not data.get('date_of_birth'):
