@@ -1,4 +1,4 @@
-from flask import Flask, url_for
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -14,7 +14,7 @@ import os
 from datetime import datetime
 
 from config import Config
-from app.admin import AdminModelView, BaseAdminIndexView
+from app.admin import BaseAdminIndexView, UserModelView
 
 db_relational = SQLAlchemy()
 db_mongo = MongoEngine()
@@ -75,9 +75,6 @@ def create_app(config_class=Config):
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
-    from app.main import bp as main_bp
-    app.register_blueprint(main_bp)
-
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
 
@@ -85,9 +82,9 @@ def create_app(config_class=Config):
     app.register_blueprint(ml)
     app.register_blueprint(cli_admin)
 
-    # Iniatiate admin interface
+    # Initiate admin interface
     from app.models.user import User
-    admin.add_view(AdminModelView(User, db_relational.session))
-    # admin.add_link(MenuLink(name='Logout', url=url_for('auth.logout')))
+    admin.add_view(UserModelView(User, db_relational.session, endpoint='user'))
+    admin.add_link(MenuLink(name='Logout', url='/auth/logout'))
 
     return app

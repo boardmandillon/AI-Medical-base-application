@@ -48,6 +48,6 @@ def create_superuser():
     else:
         user = User()
         user.from_dict(data, new_user=True)
-        user.user_role(UserRoles.ADMIN)
+        user.user_role = UserRoles.ADMIN
         db.session.add(user)
         db.session.commit()
