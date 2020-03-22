@@ -10,7 +10,7 @@ class BaseAdminIndexView(AdminIndexView):
     """Admin index view, which adds authentication to the admin site."""
 
     def is_accessible(self):
-        return not current_user.is_anonymous and current_user.is_admin()
+        return current_user.is_authenticated and current_user.is_admin()
 
     def inaccessible_callback(self, name, **kwargs):
         # redirect to login page if user doesn't have access
@@ -21,7 +21,7 @@ class AdminModelView(ModelView):
     """Basic model view with authentication for database models to use."""
 
     def is_accessible(self):
-        return not current_user.is_anonymous and current_user.is_admin()
+        return current_user.is_authenticated and current_user.is_admin()
 
     def inaccessible_callback(self, name, **kwargs):
         # redirect to login page if user doesn't have access
