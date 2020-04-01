@@ -34,6 +34,15 @@ def example_get_from_id(doc_id):
     return jsonify(example_doc)
 
 
+@bp.route('/example/<doc_id>', methods=['DELETE'])
+@token_auth.login_required
+def example_delete_from_id(doc_id):
+    """Deletes record corresponding to the given ID."""
+    ExampleModel.objects.get_or_404(
+        id=doc_id, user_id=g.current_user.id).delete()
+    return jsonify({"success": True})
+
+
 @bp.route('/example/<doc_id>', methods=['PATCH'])
 @token_auth.login_required
 @user_role_required(UserRoles.USER)
