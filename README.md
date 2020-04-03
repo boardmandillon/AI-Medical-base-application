@@ -157,3 +157,45 @@ all volumes manually using `docker volume list` and then delete them
 individually using:
  
 `docker volume rm <volume_ids>`
+
+## Flask mail settings
+
+To send emails you must set the following environment variables in your 
+terminal before running Flask:
+
+```
+MAIL_SERVER='<email server>'
+MAIL_PORT='<email port of server>'
+MAIL_USE_TLS=<use tls?>
+MAIL_USERNAME='<email address>'
+MAIL_PASSWORD='<email account_password>'
+```
+
+The following example is what would be entered into a bash shell for a Gmail 
+account:
+
+```
+export MAIL_SERVER='smtp.googlemail.com'
+export MAIL_PORT=587
+export MAIL_USE_TLS=1
+export MAIL_USERNAME='myemail@gmail.com'
+export MAIL_PASSWORD='mypassword'
+```
+
+These settings only need to be set if you require emails, the Flask server
+will not fail if these are not set.
+
+---
+
+**Note:** 
+
+Gmail doesn't allow you to use it as an email server by default, you must 
+explicitly allow "less secure apps" access to your Gmail account. See the 
+following link:
+
+https://support.google.com/accounts/answer/6010255?hl=en
+
+It will also not work if 2 factor authentication is turned on, so I would 
+advise you to use/create a secondary account.
+
+---
