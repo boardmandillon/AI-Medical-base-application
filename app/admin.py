@@ -48,3 +48,7 @@ class UserModelView(AdminModelView):
                 validators.DataRequired(), validators.EqualTo('password')])
 
         return create_form
+
+    def on_model_change(self, form, model, is_created):
+        if is_created:
+            model.set_password(form.password.data)

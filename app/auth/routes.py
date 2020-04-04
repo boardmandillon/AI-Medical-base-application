@@ -18,7 +18,8 @@ def login():
         if form.validate_on_submit():
             user = User.query.filter_by(email=form.email.data).first()
 
-            if not user or not user.check_password(form.password.data):
+            if not user or not user.check_password(form.password.data) or \
+                    not user.is_admin():
                 flash('Invalid username or password')
 
                 return redirect(url_for('auth.login'))
