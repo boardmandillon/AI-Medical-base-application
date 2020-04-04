@@ -1,8 +1,7 @@
-from flask import redirect, url_for, request
+from flask import redirect, url_for, request, flash
 from flask_admin.contrib.sqla import ModelView
 from flask_admin import AdminIndexView
 from flask_login import current_user
-
 from wtforms import fields, validators
 
 
@@ -52,3 +51,11 @@ class UserModelView(AdminModelView):
     def on_model_change(self, form, model, is_created):
         if is_created:
             model.set_password(form.password.data)
+        return model
+
+    def validate_form(self, form):
+        if self.model.query.filter_by(email=form.email.data).first():
+            flash("Please use a different email address.", category="error")
+            return False
+        else:
+            return super(AdminModelView, self).validate_form(form)
