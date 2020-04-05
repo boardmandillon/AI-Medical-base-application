@@ -1,3 +1,5 @@
+from flask import current_app as app
+
 import pickle
 import datetime
 import json
@@ -45,12 +47,14 @@ class MLBase(object):
     def _save_ml_model(self, doc_id=None, ml_model=None, training=False):
         """Save the machine learning model to MongoDB as a binary file."""
         if doc_id:
-            print("{} | Updating the existing ML model: {}...".format(
-                self.project_name, doc_id))
+            app.logger.info(
+                "{} | Updating the existing ML model: {}...".format(
+                    self.project_name, doc_id))
 
             model = MLModel.objects(id=doc_id).get()
         else:
-            print("{} | Saving the new ML model...".format(self.project_name))
+            app.logger.info("{} | Saving the new ML model...".format(
+                self.project_name))
 
             model = MLModel()
 
@@ -62,7 +66,7 @@ class MLBase(object):
 
         model.save()
 
-        print("{} | Model saved".format(self.project_name))
+        app.logger.info("{} | Model saved".format(self.project_name))
 
         return model
 
@@ -82,17 +86,19 @@ class MLBase(object):
             if not self.ml_model or \
                     model.id.generation_time > self.ml_model_date_modified:
 
-                print("{} | New machine learning model found, loading..."
-                      "".format(self.project_name))
+                app.logger.info(
+                    "{} | New machine learning model found, loading...".format(
+                        self.project_name))
 
                 self.ml_model = pickle.loads(model.ml_model.read())
                 self.ml_model_date_modified = model.id.generation_time
 
-                print("{} | Machine learning model loaded".format(
+                app.logger.info("{} | Machine learning model loaded".format(
                     self.project_name))
         else:
-            print("{} | No machine learning models found in the the database"
-                  "".format(self.project_name))
+            app.logger.warning(
+                "{} | No machine learning models found in the the database"
+                "".format(self.project_name))
 
             self.ml_model = None
 
@@ -107,12 +113,13 @@ class MLBase(object):
     def fetch_data(self):
         """Fetch all training data for the project from the database."""
 
-        print("{} | Fetching training data from the database...".format(
-            self.project_name))
+        app.logger.info(
+            "{} | Fetching training data from the database...".format(
+                self.project_name))
 
         self.ml_data = json.loads(self.db_model.objects().to_json())
 
-        print("{} | Fetched all entries from the database".format(
+        app.logger.info("{} | Fetched all entries from the database".format(
             self.project_name))
 
     def _check_for_new_ml_model(self):
@@ -123,9 +130,9 @@ class MLBase(object):
         delta = datetime.datetime.utcnow() - self.last_checked
 
         if delta.seconds > (self.HOURS_BETWEEN_CHECKS * 60 * 60):
-            print("{} | {} hours has passed, checking for a new ML "
-                  "model...".format(self.project_name,
-                                    self.HOURS_BETWEEN_CHECKS))
+            app.logger.info(
+                "{} | {} hours has passed, checking for a new ML model..."
+                "".format(self.project_name, self.HOURS_BETWEEN_CHECKS))
 
             self._load_ml_model()
 
@@ -141,8 +148,9 @@ class MLBase(object):
 
         if model:
             training = model.training
-            print("{} | The latest machine learning model is training: {}"
-                  "".format(self.project_name, training))
+            app.logger.info(
+                "{} | The latest machine learning model is training: {}"
+                "".format(self.project_name, training))
 
         return training
 
@@ -170,7 +178,7 @@ class MLBase(object):
         :return: The prepared data and the identified label field.
         :rtype: list, str
         """
-        print("{} | Preparing machine learning data...".format(
+        app.logger.info("{} | Preparing machine learning data...".format(
             self.project_name))
 
         # Create a shallow copy of the data
@@ -185,7 +193,8 @@ class MLBase(object):
 
         ml_data = []
 
-        print("{} | Deleting non 'ml_' fields...".format(self.project_name))
+        app.logger.info("{} | Deleting non 'ml_' fields...".format(
+            self.project_name))
 
         for i in data:
             classified = False
@@ -202,18 +211,20 @@ class MLBase(object):
                         if not self.ml_label:
                             self.ml_label = f
 
-                            print("{} | Found field '{}' starting with 'l_', "
-                                  "using this field as the label field"
-                                  "".format(self.project_name, self.ml_label))
+                            app.logger.info(
+                                "{} | Found field '{}' starting with 'l_', "
+                                "using this field as the label field".format(
+                                    self.project_name, self.ml_label))
                     else:
                         if f.startswith('t_'):
                             if not self.ml_target:
                                 self.ml_target = f
 
-                                print("{} | Found field '{}' starting with "
-                                      "'t_', using this field as the target "
-                                      "field".format(self.project_name,
-                                                     self.ml_target))
+                                app.logger.info(
+                                    "{} | Found field '{}' starting with 't_'"
+                                    ", using this field as the target field"
+                                    "".format(
+                                        self.project_name, self.ml_target))
 
                         del i[f]
 

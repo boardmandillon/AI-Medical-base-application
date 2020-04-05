@@ -10,13 +10,17 @@ from app.api.errors import bad_request
 
 @bp.route('/users', methods=['POST'])
 def create_user():
-    """Create user accounts using api stores email and password
-    into database.
+    """Create user accounts using api stores email, password, name and date of birth
+    into database. Accepts POST requests with JSON and urlencoded content.
     """
-    data = request.form.to_dict() or {}
+    if request.headers['Content-Type'] == 'application/json':
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict() or {}
 
-    if not data.get('email') or not data.get('password'):
-        return bad_request('must include email and password fields')
+    if not data.get('email') or not data.get('password') or not data.get('name') \
+            or not data.get('date_of_birth'):
+        return bad_request('must include email, password, name and date of birth fields')
     elif User.query.filter_by(email=data['email']).first():
         return bad_request('please use a different email address')
     else:

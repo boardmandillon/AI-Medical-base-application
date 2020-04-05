@@ -3,7 +3,7 @@ from flask_httpauth import HTTPBasicAuth
 from flask_httpauth import HTTPTokenAuth
 
 from app.models.user import User
-from app.api.errors import error_response
+from app.api.errors import unauthorized
 
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth()
@@ -32,4 +32,4 @@ def verify_token(token):
 def basic_auth_error():
     """Simply returns a unauthorized HTTP error
     """
-    return error_response(401)
+    return unauthorized()

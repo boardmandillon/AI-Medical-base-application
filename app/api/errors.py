@@ -13,5 +13,13 @@ def error_response(status_code, message=None):
     return response
 
 
+def forbidden(message):
+    return error_response(403, message)
+
+
+def unauthorized(message=None):
+    return error_response(401, message=message)
+
+
 def bad_request(message):
     return error_response(400, message)

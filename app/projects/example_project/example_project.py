@@ -1,3 +1,5 @@
+from flask import current_app as app
+
 import json
 
 from app.projects.example_project.example_model import ExampleModel
@@ -14,8 +16,9 @@ class ExampleProject:
     def _save_data(data, current_user):
         """Save the passed in data to MongoDB."""
 
-        print("{} | Saving a new model with the data: {}".format(
-            ExampleProject.PROJECT_NAME, data))
+        app.logger.info(
+            "{} | Saving a new model with the data: {}".format(
+                ExampleProject.PROJECT_NAME, data))
 
         model = ExampleModel(user_id=current_user.id, **data)
         model.save()
@@ -71,12 +74,19 @@ def make_prediction(doc_id, data):
     prediction = classifier.predict(json.loads(data))
 
     if prediction:
-        print("{} | Updating document '{}' with prediction: '{}'".format(
-            ExampleProject.PROJECT_NAME, doc_id, prediction))
+        app.logger.info(
+            "{} | Updating document '{}' with prediction: '{}'".format(
+                ExampleProject.PROJECT_NAME, doc_id, prediction))
 
-        ExampleModel.objects.get(id=doc_id).update(
-            set__t_species=prediction,
-        )
+        target_info = ""
+    else:
+        prediction = ""
+        target_info = 'An error has occurred, unable to make a prediction'
+
+    ExampleModel.objects.get(id=doc_id).update(
+        set__t_species=prediction,
+        set__target_info=target_info,
+    )
 
 
 @celery.task(name='example_project_train')
