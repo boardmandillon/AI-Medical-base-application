@@ -1,6 +1,7 @@
 from flask import redirect, url_for, request, flash
 from flask_admin.contrib.sqla import ModelView
 from flask_admin import AdminIndexView
+from flask_admin.helpers import is_form_submitted
 from flask_login import current_user
 from wtforms import fields, validators
 
@@ -54,8 +55,17 @@ class UserModelView(AdminModelView):
         return model
 
     def validate_form(self, form):
-        if self.model.query.filter_by(email=form.email.data).first():
-            flash("Please use a different email address.", category="error")
-            return False
-        else:
-            return super(AdminModelView, self).validate_form(form)
+        if is_form_submitted() and "email" in form.data:
+            _id = request.values.get('id')
+            users = self.model.query.filter_by(email=form.email.data).all()
+
+            # Ignore user with the same email if its the user being edited
+            if _id and users:
+                users = list(filter(lambda u: (u.id != int(_id)), users))
+
+            if users:
+                flash("Please use a different email address.",
+                      category="error")
+                return False
+
+        return super(AdminModelView, self).validate_form(form)
