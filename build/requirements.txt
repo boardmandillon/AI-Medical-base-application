@@ -9,6 +9,7 @@ flask-migrate
 flask-login
 flask-mongoengine
 flask-httpauth
+flask-admin
 python-dotenv
 psycopg2-binary
 httpie

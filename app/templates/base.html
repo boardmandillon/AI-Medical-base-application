@@ -11,12 +11,7 @@
 {% block navbar %}
     <nav class="navbar navbar-default">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">Vulture</a>
-            {% if current_user.is_anonymous %}
-                <a class="navbar-brand" href="{{ url_for('auth.login') }}">Login</a>
-            {% else %}
-                <a class="navbar-brand" href="{{ url_for('auth.logout') }}">Logout</a>
-            {% endif %}
+            <h1>Vulture Admin</h1>
         </div>
     </nav>
 {% endblock %}
