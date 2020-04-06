@@ -31,9 +31,11 @@ class UserRoles(enum.Enum):
 class User(UserMixin, db.Model):
     """Database model representing a user."""
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(40))
+    name = db.Column(db.String(40), index=True)
     email = db.Column(db.String(120), index=True, unique=True)
-    date_of_birth = db.Column(db.Date)
+    date_of_birth = db.Column(db.Date, index=True)
+    date_registered = db.Column(db.DateTime, index=True,
+                                default=datetime.utcnow().replace(microsecond=0))
     password_hash = db.Column(db.String(128))
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
