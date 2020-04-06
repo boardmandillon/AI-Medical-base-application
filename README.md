@@ -199,3 +199,13 @@ It will also not work if 2 factor authentication is turned on, so I would
 advise you to use/create a secondary account.
 
 ---
+
+## Creating a super user
+
+You can create a user with admin privileges via the command line using:
+
+`flask cli_admin createsuperuser`
+
+Which will then prompt you to enter a name, email and password.
+
+This user can be used to login to the admin interface at: `<host>/admin`

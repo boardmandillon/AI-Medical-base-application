@@ -112,6 +112,10 @@ class User(UserMixin, db.Model):
         """
         return self.user_role.value >= user_role.value
 
+    def is_admin(self):
+        """Checks if the user is an admin."""
+        return self.user_role == UserRoles.ADMIN
+
     def get_reset_password_token(self, expires_in=600):
         """Sets the password reset token field for reseting the users password.
 

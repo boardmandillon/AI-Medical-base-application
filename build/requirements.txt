@@ -1,3 +1,4 @@
+<<<<<<< build/requirements.txt
 wtforms==2.2.1
 werkzeug==1.0.1
 flask==1.1.1
@@ -10,6 +11,7 @@ flask-login==0.5.0
 flask-mongoengine==0.9.5
 flask-httpauth==3.3.0
 flask-mail==0.9.1
+flask-admin==1.5.5
 python-dotenv==0.12.0
 psycopg2-binary==2.8.4
 httpie==2.0.0

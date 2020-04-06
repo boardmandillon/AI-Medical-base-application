@@ -12,7 +12,11 @@ from app.models.user import UserRoles
 @token_auth.login_required
 def example_create():
     """Creates diagnosis from JSON data in the request."""
-    data = request.form.to_dict() or {}
+    if request.headers['Content-Type'] == 'application/json':
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict() or {}
+
     return jsonify(
         ExampleProject.predict(data, g.current_user)), 201
 
@@ -48,7 +52,10 @@ def example_delete_from_id(doc_id):
 @user_role_required(UserRoles.USER)
 def example_update(doc_id):
     """Updates fields of the document from the JSON data in the request."""
-    data = request.form.to_dict() or {}
+    if request.headers['Content-Type'] == 'application/json':
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict() or {}
 
     model = ExampleModel.objects.get_or_404(
         id=doc_id, user_id=g.current_user.id)

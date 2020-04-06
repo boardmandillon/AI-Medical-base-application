@@ -8,11 +8,14 @@ from flask_mail import Mail
 from celery import Celery
 import logging
 from logging.handlers import RotatingFileHandler
+from flask_admin import Admin
+from flask_admin.menu import MenuLink
 
 import os
 from datetime import datetime
 
 from config import Config
+from app.admin import BaseAdminIndexView, UserModelView
 
 db_relational = SQLAlchemy()
 db_mongo = MongoEngine()
@@ -21,6 +24,7 @@ login = LoginManager()
 login.login_view = 'auth.login'
 bootstrap = Bootstrap()
 mail = Mail()
+admin = Admin(name='Vulture', template_mode='bootstrap3')
 celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
 
 
@@ -64,6 +68,7 @@ def create_app(config_class=Config):
     login.init_app(app)
     bootstrap.init_app(app)
     mail.init_app(app)
+    admin.init_app(app, index_view=BaseAdminIndexView())
 
     celery.conf.update(app.config)
 
@@ -73,13 +78,16 @@ def create_app(config_class=Config):
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
-    from app.main import bp as main_bp
-    app.register_blueprint(main_bp)
-
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
 
-    from app.commands import ml
+    from app.commands import ml, cli_admin
     app.register_blueprint(ml)
+    app.register_blueprint(cli_admin)
+
+    # Initiate admin interface
+    from app.models.user import User
+    admin.add_view(UserModelView(User, db_relational.session, endpoint='user'))
+    admin.add_link(MenuLink(name='Logout', url='/auth/logout'))
 
     return app

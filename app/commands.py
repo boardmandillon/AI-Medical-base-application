@@ -1,11 +1,14 @@
 from flask import Blueprint
 
 import click
+from getpass import getpass
 
-from app import celery
+from app import celery, db_relational as db
 from config import Config
+from app.models.user import User, UserRoles
 
 ml = Blueprint('ml', __name__)
+cli_admin = Blueprint('cli_admin', __name__)
 
 
 @ml.cli.command('train')
@@ -24,3 +27,27 @@ def train(project_train_task):
     else:
         print("'{}' is not a valid celery task name for training a machine"
               "learning model".format(project_train_task))
+
+
+@cli_admin.cli.command('createsuperuser')
+def create_superuser():
+    data = {
+        "name": input("Name: "),
+        "email": input("Email: "),
+        "password": getpass(),
+    }
+    password2 = getpass(prompt='Confirm password: ')
+
+    if data.get("password") != password2:
+        print("Passwords are not the same")
+    elif not (data.get("name") and data.get("email") and data.get("password")):
+        print('Must include email, password, name and date of '
+              'birth fields')
+    elif User.query.filter_by(email=data.get("email")).first():
+        print('please use a different email address')
+    else:
+        user = User()
+        user.from_dict(data, new_user=True)
+        user.user_role = UserRoles.ADMIN
+        db.session.add(user)
+        db.session.commit()
