@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
 from flask_mongoengine import MongoEngine
+from flask_mail import Mail
 from celery import Celery
 import logging
 from logging.handlers import RotatingFileHandler
@@ -22,8 +23,9 @@ migrate = Migrate()
 login = LoginManager()
 login.login_view = 'auth.login'
 bootstrap = Bootstrap()
-celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
+mail = Mail()
 admin = Admin(name='Vulture', template_mode='bootstrap3')
+celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
 
 
 def create_app(config_class=Config):
@@ -65,6 +67,7 @@ def create_app(config_class=Config):
     db_mongo.init_app(app)
     login.init_app(app)
     bootstrap.init_app(app)
+    mail.init_app(app)
     admin.init_app(app, index_view=BaseAdminIndexView())
 
     celery.conf.update(app.config)
