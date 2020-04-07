@@ -31,5 +31,13 @@ class Config(object):
         'example_project_train': {
             'task': 'example_project_train',
             'schedule': crontab(minute=0, hour=0),
-        }
+        },
+        'aap_diagnosis_train': {
+            'task': 'aap_diagnosis_train',
+            'schedule': crontab(minute=0, hour=0),
+        },
+        'aap_gyn_diagnosis_train': {
+            'task': 'aap_gyn_diagnosis_train',
+            'schedule': crontab(minute=0, hour=0),
+        },
     }

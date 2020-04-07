@@ -4,22 +4,31 @@ import pandas as pd
 
 from app.machine_learning.ml_base.ml_base import MLBase
 
+# TODO: Add prior weights properly
+from app.projects.aap_diagnosis.aap_initial_weights import AAP_WEIGHTS
+
 
 class GaussianNaiveBayes(MLBase):
     """Gaussian Naive Bayes classifier for use in projects."""
 
-    def __init__(self, project_name, db_model, labels):
+    priors = None
+
+    def __init__(self, project_name, db_model, labels, priors=None):
         """Initiate a Gaussian Naive Bayes classifier.
 
         :param project_name: The name of the project.
         :param db_model: The database model class which the project uses.
         :param labels: A dictionary of numeric labels corresponding to their
             meanings.
+        :param priors: Prior probabilities of the classes, default is None.
 
         :type project_name: str
         :type db_model: subclass(MLModel)
         :type labels: dict{int: obj}
+        :type priors: list(int)
         """
+        # TODO: Add prior weights properly
+        self.priors = AAP_WEIGHTS
         super(GaussianNaiveBayes, self).__init__(
             project_name, db_model, labels)
 
@@ -35,7 +44,7 @@ class GaussianNaiveBayes(MLBase):
                 self.project_name))
 
             if not self.ml_model:
-                self.ml_model = GaussianNB()
+                self.ml_model = GaussianNB(priors=self.priors)
 
             self.fetch_data()
             # le = preprocessing.LabelEncoder()
@@ -43,22 +52,28 @@ class GaussianNaiveBayes(MLBase):
             # wheather_encoded = le.fit_transform(wheather)
             data, label_field = self.prepare_data(self.ml_data)
 
-            if not data:
-                print("{} | No data found to train the ML algorithm".format(
-                    self.project_name))
+            if not data and self.priors is None:
+                print(
+                    "{} | No data found for training and no prior weights "
+                    "were given for the ML algorithm".format(
+                        self.project_name))
             else:
                 model = self._save_ml_model(training=True)
 
-                # Normalise the data and separate the target field
-                data = pd.json_normalize(data)
-                ml_data = data.drop(label_field, axis=1)
-                label_values = data[label_field]
+                if data:
+                    # Normalise the data and separate the target field
+                    data = pd.json_normalize(data)
+                    ml_data = data.drop(label_field, axis=1)
+                    label_values = data[label_field]
 
-                print("{} | Fitting model...".format(self.project_name))
+                    print("{} | Fitting model...".format(self.project_name))
 
-                self.ml_model.fit(ml_data, label_values)
+                    self.ml_model.partial_fit(ml_data, label_values)
 
-                print("{} | Model fitted".format(self.project_name))
+                    print("{} | Model fitted".format(self.project_name))
+                else:
+                    print("{} | No data found to train the ML algorithm, "
+                          "using prior weights".format(self.project_name))
 
                 self._save_ml_model(doc_id=model.id, ml_model=self.ml_model)
         else:

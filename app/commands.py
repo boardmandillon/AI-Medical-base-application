@@ -22,5 +22,5 @@ def train(project_train_task):
             project_train_task))
         celery.send_task(project_train_task)
     else:
-        print("'{}' is not a valid celery task name for training a machine"
+        print("'{}' is not a valid celery task name for training a machine "
               "learning model".format(project_train_task))

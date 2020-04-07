@@ -9,6 +9,7 @@ class AAPDiagnosis:
     """AAP diagnosis project for diagnosing acute abdominal pain."""
 
     PROJECT_NAME = "AAPDiagnosis"
+    MODEL = AAPDiagnosisModel
 
     @staticmethod
     def _save_data(data, current_user):
@@ -17,7 +18,7 @@ class AAPDiagnosis:
         print("{} | Saving a new model with the data: {}".format(
             AAPDiagnosis.PROJECT_NAME, data))
 
-        model = AAPDiagnosisModel(user_id=current_user.id, **data)
+        model = AAPDiagnosis.MODEL(user_id=current_user.id, **data)
         model.save()
 
         return model
@@ -55,8 +56,8 @@ def make_prediction(doc_id, data):
     :type data: dict
     """
     classifier = GaussianNaiveBayes(
-        AAPDiagnosis.PROJECT_NAME, AAPDiagnosisModel,
-        AAPDiagnosisModel.possible_labels)
+        AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL,
+        AAPDiagnosis.MODEL.possible_labels)
 
     prediction = classifier.predict(json.loads(data))
 
@@ -64,7 +65,7 @@ def make_prediction(doc_id, data):
         print("{} | Updating document '{}' with prediction: '{}'".format(
             AAPDiagnosis.PROJECT_NAME, doc_id, prediction))
 
-        AAPDiagnosisModel.objects.get(id=doc_id).update(
+        AAPDiagnosis.MODEL.objects.get(id=doc_id).update(
             set__t_diagnosis=prediction,
         )
 
@@ -75,7 +76,7 @@ def train_classifier():
     changed.
     """
     classifier = GaussianNaiveBayes(
-        AAPDiagnosis.PROJECT_NAME, AAPDiagnosisModel,
-        AAPDiagnosisModel.possible_labels)
+        AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL,
+        AAPDiagnosis.MODEL.possible_labels)
 
     classifier.train()
