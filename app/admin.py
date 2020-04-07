@@ -35,7 +35,7 @@ class UserModelView(AdminModelView):
     column_searchable_list = ['name', 'email']
     column_filters = ['user_role']
     form_excluded_columns = column_exclude_list + [
-        'password_reset_expiration']
+        'password_reset_expiration', 'last_login', 'date_registered']
 
     def get_create_form(self):
         create_form = super().get_create_form()
