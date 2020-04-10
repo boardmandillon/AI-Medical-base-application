@@ -1,4 +1,5 @@
 from flask import request, g
+from flask import jsonify
 
 from app.api import bp
 from app.api.auth import token_auth
@@ -38,6 +39,36 @@ def create_urine_analysis():
     diagnosis.save()
 
     return diagnosis.to_json()
+
+
+@bp.route('/urine_dipstick_analysis_images/')
+@token_auth.login_required
+def get_urine_analyses_image():
+    """Retrieves analysis image corresponding to a given filename parameter
+    for a specific user.
+    """
+    data = request.args.to_dict()
+
+    if not data.get('filename'):
+        return bad_request('must include filename')
+    if not UrineDipstickModel.objects.filter(user_id=g.current_user.id,
+                                             filename=data.get('filename')).first():
+        return bad_request('no file with the name: ' + data.get('filename') + ' for this user')
+    user_data = UrineDipstickModel.objects.filter(user_id=g.current_user.id,
+                                                  filename=data.get('filename')).first()
+    photo = user_data.diagnosis_photo.read()
+    content_type = user_data.content_type
+
+    # do what you want with image here, example writing image to given path
+    extension = ''
+    if content_type == 'image/jpeg':
+        extension = '.jpg'
+    out_filepath = '/Users/Miles/Desktop/test' + extension
+    output = open(out_filepath, "wb")
+    output.write(photo)
+    output.close()
+    data = {'message': 'image retrieved successfully'}
+    return jsonify(data), 200
 
 
 @bp.route('/urine_dipstick_analysis/')
