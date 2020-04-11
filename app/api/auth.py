@@ -11,8 +11,7 @@ token_auth = HTTPTokenAuth()
 
 @basic_auth.verify_password
 def verify_password(email, password):
-    """Uses the email and password to verify a user
-    """
+    """Uses the email and password to verify a user."""
     user = User.query.filter_by(email=email).first()
     if user is None:
         return False
@@ -22,14 +21,12 @@ def verify_password(email, password):
 
 @token_auth.verify_token
 def verify_token(token):
-    """Verify that the token belongs to the user
-    """
+    """Verify that the token belongs to the user."""
     g.current_user = User.check_token(token) if token else None
     return g.current_user is not None
 
 
 @basic_auth.error_handler
 def basic_auth_error():
-    """Simply returns a unauthorized HTTP error
-    """
+    """Simply returns a unauthorized HTTP error."""
     return unauthorized()

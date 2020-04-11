@@ -31,12 +31,17 @@ class UserRoles(enum.Enum):
 class User(UserMixin, db.Model):
     """Database model representing a user."""
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(40))
+    name = db.Column(db.String(40), index=True)
     email = db.Column(db.String(120), index=True, unique=True)
-    date_of_birth = db.Column(db.Date)
+    date_of_birth = db.Column(db.Date, index=True)
+    date_registered = db.Column(db.DateTime, index=True,
+                                default=datetime.utcnow().replace(microsecond=0))
+    last_login = db.Column(db.DateTime, index=True)
     password_hash = db.Column(db.String(128))
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
+    password_reset_token = db.Column(db.String(32), index=True, unique=True)
+    password_reset_expiration = db.Column(db.DateTime)
     user_role = db.Column(
         db.Enum(UserRoles), default=UserRoles.USER, nullable=False)
 
@@ -83,8 +88,12 @@ class User(UserMixin, db.Model):
             self.set_password(data['password'])
 
     def get_token(self, expires_in=3600):
-        """Returns a randomly string token to the user."""
+        """Sets the last login and returns a random string token to the user.
+
+        :param expires_in: Time until the token expires in seconds
+        """
         now = datetime.utcnow()
+        self.last_login = now.replace(microsecond=0)
         if self.token and self.token_expiration > now + timedelta(seconds=60):
             return self.token
         self.token = base64.b64encode(os.urandom(24)).decode('utf-8')
@@ -111,9 +120,37 @@ class User(UserMixin, db.Model):
         return self.user_role.value >= user_role.value
 
     def is_admin(self):
-        """Checks if the user is an admin.
-        """
+        """Checks if the user is an admin."""
         return self.user_role == UserRoles.ADMIN
+
+    def get_reset_password_token(self, expires_in=600):
+        """Sets the password reset token field for reseting the users password.
+
+        :param expires_in: How long in seconds until the token expires,
+            default is 600.
+        :type expires_in: int
+
+        :return: The password reset token.
+        """
+        now = datetime.utcnow()
+        self.password_reset_token = base64.b64encode(
+            os.urandom(24)).decode('utf-8')
+        self.password_reset_expiration = now + timedelta(seconds=expires_in)
+        db.session.add(self)
+        return self.password_reset_token
+
+    @staticmethod
+    def verify_reset_password_token(token):
+        """Verifies the given password reset token, returning the user
+        corresponding to the token if one exists.
+
+        :param token: Password reset token.
+        """
+        user = User.query.filter_by(password_reset_token=token).first()
+        if user is None or user.password_reset_expiration < datetime.utcnow():
+            return None
+        else:
+            return user
 
 
 @login.user_loader
