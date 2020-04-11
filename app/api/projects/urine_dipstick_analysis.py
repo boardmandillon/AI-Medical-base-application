@@ -10,6 +10,7 @@ from PIL import Image
 import io
 import base64
 import binascii
+import bson
 
 
 @bp.route('/urine_dipstick_analysis/', methods=['POST'])
@@ -47,31 +48,37 @@ def create_urine_analysis():
     return diagnosis.to_json(), 201
 
 
-@bp.route('/urine_dipstick_analysis_images/')
+@bp.route('/urine_dipstick_analysis_images/', methods=['GET'])
 @token_auth.login_required
 def get_urine_analyses_image():
-    """Retrieves analysis image corresponding to a given filename parameter
-    for a specific user.
+    """Retrieves analysis image corresponding to a given document object ID
+    passed as a URL parameter.
+
+    For example <base URL>/urine_dipstick_analysis_images?id=<object ID here>
     """
     data = request.args.to_dict()
 
-    if not data.get('filename'):
-        return bad_request('must include filename')
-    if not UrineDipstickModel.objects.filter(user_id=g.current_user.id,
-                                             filename=data.get('filename')).first():
-        return bad_request('no file with the name: ' + data.get('filename') + ' for this user')
-    user_data = UrineDipstickModel.objects.filter(user_id=g.current_user.id,
-                                                  filename=data.get('filename')).first()
-    photo = user_data.diagnosis_photo.read()
+    if not data.get('id'):
+        return bad_request('must include image file id')
+    object_id = data.get('id')
+
+    if not UrineDipstickModel.objects.get(
+            user_id=g.current_user.id,
+            diagnosis_photo=bson.objectid.ObjectId(object_id)):
+        return bad_request('no file with the id: ' + data.get('id') + ' for this user')
+
+    user_data = UrineDipstickModel.objects.get(
+        user_id=g.current_user.id, diagnosis_photo=bson.objectid.ObjectId(object_id))
+    diagnosis_photo = user_data.diagnosis_photo.read()
     content_type = user_data.content_type
 
     # do what you want with image here, example writing image to given path
     extension = ''
-    if content_type == 'image/jpeg':
+    if content_type == 'JPEG':
         extension = '.jpg'
     out_filepath = '/Users/Miles/Desktop/test' + extension
     output = open(out_filepath, "wb")
-    output.write(photo)
+    output.write(diagnosis_photo)
     output.close()
     data = {'message': 'image retrieved successfully'}
     return jsonify(data), 200
