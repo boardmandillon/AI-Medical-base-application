@@ -11,8 +11,6 @@ class UrineDipstickModel(ProjectBase):
 
     possible_labels = {}
 
-    filename = db.StringField(required=True)
-    upload_date = db.DateTimeField(default=datetime.utcnow())
     content_type = db.StringField(required=True)
     diagnosis_photo = db.FileField(required=True)
 

@@ -19,3 +19,4 @@ pandas
 numpy
 redis
 celery
+pillow

@@ -6,6 +6,8 @@ from app.api.auth import token_auth
 from app.projects.urine_dipstick_analysis.urine_dipstick_model import \
     UrineDipstickModel
 from app.api.errors import bad_request
+from PIL import Image
+import io
 import base64
 import binascii
 
@@ -15,30 +17,34 @@ import binascii
 def create_urine_analysis():
     """Creates diagnosis from JSON data in the request.
     Decodes a base64 encoded image into binary form before sending
-    to the project model. It is expected that the mime type will be
-    provided by the client in order to identify the file extension type.
-    Each file uploaded by a user will need a unique file name for identification.
+    to the project model. Verification of binary image data is done by
+    PIL library.
     """
     data = request.get_json() or {}
 
-    if not data.get('filename') or not data.get('content_type') \
-            or not data.get('photo_base64'):
-        return bad_request('must include filename, content type and photo data in request')
-    elif UrineDipstickModel.objects.filter(user_id=g.current_user.id,
-                                           filename=data.get('filename')).first():
-        return bad_request('please use a different filename for this user')
+    if not data.get('photo_base64'):
+        return bad_request('must include content type and photo data in request')
     photo_base64 = data.get('photo_base64')
+
     try:
         diagnosis_photo = base64.b64decode(photo_base64, validate=True)
     except binascii.Error:
         return bad_request('failed to decode base64 string')
     del data['photo_base64']
 
-    diagnosis = UrineDipstickModel(user_id=g.current_user.id, **data,
-                                   diagnosis_photo=diagnosis_photo)
+    try:
+        image = Image.open(io.BytesIO(diagnosis_photo))
+        image.verify()
+        content_type = image.format
+        image.close()
+    except IOError:
+        return bad_request('image file is not valid')
+
+    diagnosis = UrineDipstickModel(user_id=g.current_user.id, content_type=content_type,
+                                   **data, diagnosis_photo=diagnosis_photo)
     diagnosis.save()
 
-    return diagnosis.to_json()
+    return diagnosis.to_json(), 201
 
 
 @bp.route('/urine_dipstick_analysis_images/')
