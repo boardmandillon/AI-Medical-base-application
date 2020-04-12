@@ -1,8 +1,9 @@
 import click
 import json
 
-from app.commands import bp
-from app.commands.helpers import login
+from app import db_relational as db
+from app.commands import ml_bp
+from app.commands.cli_admin import login
 from app.projects.aap_diagnosis.aap_diagnosis_model import \
     AAPDiagnosisModel, AAPGynDiagnosisModel
 
@@ -30,14 +31,15 @@ def load_data(json_file, model):
                 model.user_id = user.id
                 model.ml_symptoms = symptoms
                 model.l_actual_diagnosis = label
-                model.save()
+                db.session.add(model)
+            db.session.commit()
             return True
     else:
         print("User must sign in as an admin to perform this function")
         return
 
 
-@bp.cli.command('load_aap_data')
+@ml_bp.cli.command('load_aap_data')
 @click.argument('json_file')
 def train(json_file):
     """Loads AAP training data from the given JSON file and saves it
@@ -61,7 +63,7 @@ def train(json_file):
     load_data(json_file, AAPDiagnosisModel)
 
 
-@bp.cli.command('load_aap_gyn_data')
+@ml_bp.cli.command('load_aap_gyn_data')
 @click.argument('json_file')
 def train(json_file):
     """Loads AAP Gyn training data from the given JSON file and saves it

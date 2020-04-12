@@ -5,7 +5,8 @@ from app.models.user import User
 from app import db_relational as db
 
 from app.api import bp
-from app.api.errors import bad_request
+from app.api.errors import bad_request, forbidden
+from app.auth.email import send_password_reset_email
 
 
 @bp.route('/users', methods=['POST'])
@@ -18,16 +19,66 @@ def create_user():
     else:
         data = request.form.to_dict() or {}
 
-    if not data.get('email') or not data.get('password') or not data.get('name') \
-            or not data.get('date_of_birth'):
-        return bad_request('must include email, password, name and date of birth fields')
+    if not data.get('email') or not data.get('password') or \
+            not data.get('name') or not data.get('date_of_birth'):
+        return bad_request(
+            "Must include 'email', 'password', 'name' and "
+            "'date_of_birth' fields")
     elif User.query.filter_by(email=data['email']).first():
-        return bad_request('please use a different email address')
+        return bad_request('Please use a different email address')
     else:
         user = User()
         user.from_dict(data, new_user=True)
         db.session.add(user)
         db.session.commit()
-        response = jsonify(user.to_dict())
-        response.status_code = 201
-        return response
+        return jsonify(user.to_dict()), 201
+
+
+@bp.route('/users/password-reset', methods=['PUT'])
+def password_reset():
+    """Sends a reset password email to the given email address.
+
+    This will always return a 204 NO CONTENT for security reasons unless
+    the request is bad.
+    """
+    if request.headers['Content-Type'] == 'application/json':
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict() or {}
+
+    email = data.get('email')
+    if not email:
+        return bad_request("Must include 'email' field")
+
+    user = User.query.filter_by(email=email).first()
+    if user:
+        send_password_reset_email(user)
+        db.session.commit()
+    return jsonify(), 204
+
+
+@bp.route('/users/password', methods=['PUT'])
+def password():
+    """Changes the password to the given new password for the user
+    corresponding to the given password reset token.
+
+    If the token is invalid a 403 FORBIDDEN is returned.
+    """
+    if request.headers['Content-Type'] == 'application/json':
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict() or {}
+
+    token = data.get('token')
+    new_password = data.get('new_password')
+    if not token or not new_password:
+        return bad_request(
+            "Must include 'token' and 'new_password' fields")
+
+    user = User.verify_reset_password_token(token)
+    if user:
+        user.set_password(new_password)
+        db.session.commit()
+        return jsonify(), 204
+    else:
+        return forbidden("Invalid password reset token")

@@ -1,6 +1,6 @@
 import click
 
-from app.commands import bp
+from app.commands import ml_bp as bp
 from app import celery
 from config import Config
 
