@@ -18,7 +18,8 @@ class AAPDiagnosis:
         print("{} | Saving a new model with the data: {}".format(
             AAPDiagnosis.PROJECT_NAME, data))
 
-        model = AAPDiagnosis.MODEL(user_id=current_user.id, **data)
+        model = AAPDiagnosis.MODEL(user_id=current_user.id)
+        model.from_dict(data)
         model.save()
 
         return model
@@ -37,8 +38,6 @@ class AAPDiagnosis:
         :rtype: AAPDiagnosisModel
         """
         model = AAPDiagnosis._save_data(data, current_user)
-
-        # Make predictions asynchronously
         make_prediction.delay(
             str(model.id), model.to_json())
 

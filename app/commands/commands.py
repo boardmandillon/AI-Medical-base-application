@@ -1,14 +1,11 @@
-from flask import Blueprint
-
 import click
 
+from app.commands import bp
 from app import celery
 from config import Config
 
-ml = Blueprint('ml', __name__)
 
-
-@ml.cli.command('train')
+@bp.cli.command('train')
 @click.argument('project_train_task')
 def train(project_train_task):
     """Trains the machine learning model using the celery task name.

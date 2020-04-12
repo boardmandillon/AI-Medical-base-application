@@ -76,7 +76,7 @@ def create_app(config_class=Config):
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
 
-    from app.commands import ml
-    app.register_blueprint(ml)
+    from app.commands import bp as cli_bp
+    app.register_blueprint(cli_bp)
 
     return app

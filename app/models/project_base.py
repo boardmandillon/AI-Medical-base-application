@@ -16,6 +16,8 @@ class ProjectBase(db.Document):
     * Data fields: Fields containing information to make a prediction from.
         They should be denoted by appending 'ml_' to their field names.
     """
+    possible_labels = {}
+
     user_id = db.IntField(required=True)
     target_info = db.StringField()
 
@@ -31,3 +33,17 @@ class ProjectBase(db.Document):
         'auto_create_index': True,
         'ordering': ['-id.generation_time'],
     }
+
+    def get_label_from_numeric(self, numeric_label):
+        """Returns the string value of the label from the integer numeric
+        value.
+        """
+        for label in self.possible_labels:
+            if self.possible_labels[label] == numeric_label:
+                return label
+
+    def get_numeric_from_label(self, string_label):
+        """Returns the numeric integer value of the label from the string
+        value.
+        """
+        return self.possible_labels[string_label]

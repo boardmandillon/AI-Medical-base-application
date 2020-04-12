@@ -1,5 +1,6 @@
 from app.models.project_base import ProjectBase
 from app import db_mongo as db
+from .aap_questions import AAP_QUESTIONS, AAP_GYN_QUESTIONS
 
 
 class AAPDiagnosisModel(ProjectBase):
@@ -15,61 +16,82 @@ class AAPDiagnosisModel(ProjectBase):
         "Renal Colic": 8,
         "Dyspepsia": 9,
     }
+    number_symptoms = 136
+    questions = AAP_QUESTIONS
 
-    sight_of_pain_labels = [
-        "Right Upper Quadrant", "Left Upper Quadrant",
-        "Right Lower Quadrant", "Left Lower Quadrant",
-        "Upper Half", "Lower Half", "Right Side", "Left Side",
-        "Central", "General", "Right Loin", "Left Loin", "No Pain",
-    ]
-
-    ml_sex = db.StringField(required=True, choices=["Male", "Female"])
-    ml_age = db.StringField(required=True, choices=[
-        "<10", "10s", "20s", "30s", "40s", "50s", "60s", "70+"])
-    ml_site_of_pain_at_onset = db.StringField(choices=sight_of_pain_labels)
-    ml_site_of_pain_at_present = db.StringField(
-        required=True, choices=sight_of_pain_labels)
-    ml_aggravating_factors = db.ListField(db.StringField(choices=[
-        "Movement", "Coughing", "Respiration", "Food", "Other", "None"]))
-    ml_relieving_factors = db.ListField(db.StringField(choices=[
-        "Lying Still", "Vomiting", "Antacids", "Food", "Other", "None"]))
-    ml_progress = db.StringField(choices=["Better", "Same", "Worse"])
-    ml_duration = db.StringField(choices=[
-        "<12 hours", "12-23 hours", "24-48 hours", "2-7 days"])
-    ml_type = db.StringField(choices=["Intermittent", "Steady", "Colicky"])
-    ml_severity = db.StringField(choices=["Moderate", "Severe"])
-    ml_nausea = db.BooleanField()
-    ml_vomiting = db.BooleanField()
-    ml_anorexia = db.BooleanField()
-    ml_previous_indigestion = db.BooleanField()
-    ml_jaundice = db.BooleanField()
-    ml_bowels = db.ListField(db.StringField(choices=[
-        "Normal", "Constipation", "Diarrhoea", "Blood", "Mucus"]))
-    ml_micturition = db.ListField(db.StringField(choices=[
-        "Normal", "Frequency", "Dysuria", "Dark", "Haematuria"]))
-    ml_previous_similar_pain = db.BooleanField()
-    ml_previous_abdo_surgery = db.BooleanField()
-    ml_drugs_for_abdo_pain = db.BooleanField()
-    ml_mood = db.StringField(choices=["Normal", "Distressed", "Anxious"])
-    ml_colour = db.ListField(db.StringField(choices=[
-        "Normal", "Pale", "Flushed", "Jaundiced", "Cyanosed"]))
-    ml_abdo_movement = db.StringField(choices=[
-        "Normal", "Poor", "Peristalsis"])
-    ml_scar = db.BooleanField()
-    ml_distension = db.BooleanField()
-    ml_site_of_tenderness = db.StringField(choices=sight_of_pain_labels)
-    ml_rebound = db.BooleanField()
-    ml_guarding = db.BooleanField()
-    ml_rigidity = db.BooleanField()
-    ml_mass = db.BooleanField()
-    ml_murphy = db.BooleanField()
-    ml_bowel = db.StringField(choices=["Normal", "Decreased", "Hyper"])
-    ml_rectal_tenderness = db.ListField(db.StringField(choices=[
-        "Left", "Right", "General", "Mass", "None"]))
+    ml_symptoms = db.ListField(db.IntField(), required=True)
 
     t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
     l_actual_diagnosis = db.StringField(
         choices=possible_labels.keys(), null=True)
+
+    def from_dict(self, data):
+        """Take the given dict and set the numerical values of the model
+        from it.
+
+        :param data: The dict to get the numerical data from.
+        :raises ValueError: If the given data is invalid.
+        """
+        symptoms = [0] * self.number_symptoms
+
+        # Init arrays for errors
+        missing_fields = []
+        too_many_answers_fields = []
+        invalid_answers = []
+
+        for q in self.questions:
+            received_answers = data.get(q, [])
+
+            answers = self.questions[q].get("answers")
+            required = self.questions[q].get("required")
+            mutually_exclusive = self.questions[q].get("mutually_exclusive")
+
+            if required and not received_answers:
+                missing_fields.append(q)
+                continue
+            elif mutually_exclusive and len(received_answers) > 1:
+                too_many_answers_fields.append(q)
+                continue
+
+            for a in received_answers:
+                a = a.lower().strip()
+                if a not in answers:
+                    invalid_answers.append("{}: {}".format(q, a))
+                    continue
+                else:
+                    symptoms[answers[a] - 1] = 1
+
+        if missing_fields:
+            raise ValueError(
+                "The following questions must be answered: {}".format(
+                    ", ".join(missing_fields)))
+        if too_many_answers_fields:
+            raise ValueError(
+                "Only one answer must be provided to the following fields: "
+                "{}".format(", ".join(too_many_answers_fields)))
+        if invalid_answers:
+            raise ValueError(
+                "The following fields and answers are invalid: {}".format(
+                    ", ".join(invalid_answers)))
+
+        self.ml_symptoms = symptoms
+
+    def to_dict(self):
+        """Return a dict containing the questions and answers of the
+        diagnosis from the stored numeric values.
+        """
+        questions = {}
+        for i, value in enumerate(self.ml_symptoms):
+            if value:
+                for q in self.questions:
+                    answers = self.questions[q]["answers"]
+                    for a in answers:
+                        if answers[a] == i + 1:
+                            if not questions.get(q):
+                                questions[q] = [a]
+                            else:
+                                questions[q].append(a)
+        return questions
 
 
 class AAPGynDiagnosisModel(AAPDiagnosisModel):
@@ -83,18 +105,8 @@ class AAPGynDiagnosisModel(AAPDiagnosisModel):
         "Ectopic Pregnancy": 6,
         "Incomplete Abortion": 7,
     }
-
-    ml_periods = db.StringField(choices=[
-        "Not Started", "Ceased", "Regular", "Irregular"])
-    ml_last_monthly_period = db.StringField(choices=["Normal", "Late/Overdue"])
-    ml_vaginal_discharge = db.BooleanField()
-    ml_pregnancy = db.StringField(choices=[
-        "Impossible", "Possible", "Confirmed"])
-    ml_faint = db.BooleanField()
-    ml_previous_history_of_salpingitis_or_std = db.BooleanField()
-    ml_vaginal_tenderness = db.ListField(db.StringField(choices=[
-        "Normal", "Right", "Left", "Cervix", "General", "Mass",
-        "Blood(clots)"]))
+    number_symptoms = 157
+    questions = AAP_GYN_QUESTIONS
 
     t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
     l_actual_diagnosis = db.StringField(
