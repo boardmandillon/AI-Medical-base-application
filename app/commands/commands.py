@@ -17,7 +17,7 @@ def train(project_train_task):
     if project_train_task in Config.CELERYBEAT_SCHEDULE:
         print("Executing the celery task '{}' in parallel".format(
             project_train_task))
-        celery.send_task(project_train_task)
+        celery.send_task(project_train_task, force_retrain=True)
     else:
         print("'{}' is not a valid celery task name for training a machine "
               "learning model".format(project_train_task))

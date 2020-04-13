@@ -36,14 +36,14 @@ class Config(object):
     CELERYBEAT_SCHEDULE = {
         'example_project_train': {
             'task': 'example_project_train',
-            'schedule': crontab(minute=0, hour=0),
+            'schedule': crontab(minute=0, hour=0, day_of_week=0),
         },
         'aap_diagnosis_train': {
             'task': 'aap_diagnosis_train',
-            'schedule': crontab(minute=0, hour=0),
+            'schedule': crontab(minute=0, hour=0, day_of_week=1),
         },
         'aap_gyn_diagnosis_train': {
             'task': 'aap_gyn_diagnosis_train',
-            'schedule': crontab(minute=0, hour=0),
+            'schedule': crontab(minute=0, hour=0, day_of_week=2),
         },
     }

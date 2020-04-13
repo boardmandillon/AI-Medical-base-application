@@ -1,8 +1,10 @@
+from flask import current_app as app
+
 import json
 
 from app.projects.aap_diagnosis.aap_diagnosis import AAPDiagnosis
 from app.projects.aap_diagnosis.aap_diagnosis_model import AAPGynDiagnosisModel
-from app.machine_learning.gaussian_naive_bayes import GaussianNaiveBayes
+from app.machine_learning.bernoulli_naive_bayes import BernoulliNaiveBayes
 from app import celery
 
 
@@ -23,15 +25,16 @@ def make_prediction(doc_id, data):
     :type doc_id: str
     :type data: dict
     """
-    classifier = GaussianNaiveBayes(
+    classifier = BernoulliNaiveBayes(
         AAPGynDiagnosis.PROJECT_NAME, AAPGynDiagnosis.MODEL,
         AAPGynDiagnosis.MODEL.possible_labels)
 
     prediction = classifier.predict(json.loads(data))
 
     if prediction:
-        print("{} | Updating document '{}' with prediction: '{}'".format(
-            AAPGynDiagnosis.PROJECT_NAME, doc_id, prediction))
+        app.logger.info(
+            "{} | Updating document '{}' with prediction: '{}'".format(
+                AAPGynDiagnosis.PROJECT_NAME, doc_id, prediction))
 
         AAPGynDiagnosis.MODEL.objects.get(id=doc_id).update(
             set__t_diagnosis=prediction,
@@ -39,12 +42,16 @@ def make_prediction(doc_id, data):
 
 
 @celery.task(name='aap_gyn_diagnosis_train')
-def train_classifier():
+def train_classifier(force_retrain=False):
     """Periodic Celery task for retraining the ML model if the data has
     changed.
+
+    :param force_retrain: Whether to ignore if a model is already in the
+        process of being trained, default is False.
+    :type force_retrain: bool
     """
-    classifier = GaussianNaiveBayes(
+    classifier = BernoulliNaiveBayes(
         AAPGynDiagnosis.PROJECT_NAME, AAPGynDiagnosis.MODEL,
         AAPGynDiagnosis.MODEL.possible_labels)
 
-    classifier.train()
+    classifier.train(force_retrain=force_retrain)

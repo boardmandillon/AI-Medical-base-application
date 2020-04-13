@@ -1,7 +1,6 @@
 import click
 import json
 
-from app import db_relational as db
 from app.commands import ml_bp
 from app.commands.cli_admin import login
 from app.projects.aap_diagnosis.aap_diagnosis_model import \
@@ -26,13 +25,13 @@ def load_data(json_file, model):
                 return
 
             for i, symptoms in enumerate(data):
-                model = model()
-                label = model.get_label_from_numeric(labels[i])
-                model.user_id = user.id
-                model.ml_symptoms = symptoms
-                model.l_actual_diagnosis = label
-                db.session.add(model)
-            db.session.commit()
+                diagnosis = model(user_id=user.id)
+                label = diagnosis.get_label_from_numeric(labels[i])
+                diagnosis.ml_symptoms = symptoms
+                diagnosis.l_actual_diagnosis = label
+                diagnosis.save()
+
+            print("{} data records added".format(i))
             return True
     else:
         print("User must sign in as an admin to perform this function")

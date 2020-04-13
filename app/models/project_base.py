@@ -25,7 +25,6 @@ class ProjectBase(db.Document):
     index = db.IntField()
 
     meta = {
-        'collection': 'projects',
         'allow_inheritance': True,
         'indexes': [
             'index',

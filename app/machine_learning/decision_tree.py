@@ -22,14 +22,18 @@ class DecisionTree(MLBase):
         """
         super(DecisionTree, self).__init__(project_name, db_model, labels)
 
-    def train(self):
+    def train(self, force_retrain=False):
         """Train the Decision Tree classifier.
 
         The data needs to be prepared, normalised and separated first.
         After the training is complete the model is saved to MongoDB.
+
+        :param force_retrain: Whether to ignore if a model is already in the
+            process of being trained, default is False.
+        :type force_retrain: bool
         """
         # Check if there is already a classifier being trained
-        if not self._check_if_ml_model_is_already_training():
+        if not self._check_if_ml_model_is_already_training() or force_retrain:
             app.logger.info(
                 "{} | Training decision tree classifier...".format(
                     self.project_name))
@@ -53,11 +57,9 @@ class DecisionTree(MLBase):
                 label_values = data[label_field]
 
                 app.logger.info("{} | Fitting model...".format(self.project_name))
-
                 self.ml_model.fit(ml_data, label_values)
 
                 app.logger.info("{} | Model fitted".format(self.project_name))
-
                 self._save_ml_model(doc_id=model.id, ml_model=self.ml_model)
         else:
             app.logger.info(

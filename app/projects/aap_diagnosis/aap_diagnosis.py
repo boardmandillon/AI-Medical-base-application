@@ -1,7 +1,9 @@
+from flask import current_app as app
+
 import json
 
 from app.projects.aap_diagnosis.aap_diagnosis_model import AAPDiagnosisModel
-from app.machine_learning.gaussian_naive_bayes import GaussianNaiveBayes
+from app.machine_learning.bernoulli_naive_bayes import BernoulliNaiveBayes
 from app import celery
 
 
@@ -13,16 +15,24 @@ class AAPDiagnosis:
 
     @staticmethod
     def _save_data(data, current_user):
-        """Save the passed in data to MongoDB."""
+        """Save the passed in data to MongoDB under the given user.
 
-        print("{} | Saving a new model with the data: {}".format(
+        :return: Returns the model saved and an error message if there is one.
+            If an error occurs the None will be returned as the model.
+        :rtype: AAPBaseModel, None or None, str
+        """
+
+        app.logger.info("{} | Saving a new model with the data: {}".format(
             AAPDiagnosis.PROJECT_NAME, data))
 
         model = AAPDiagnosis.MODEL(user_id=current_user.id)
-        model.from_dict(data)
+        try:
+            model.from_dict(data)
+        except ValueError as e:
+            return None, str(e)
         model.save()
 
-        return model
+        return model, None
 
     @staticmethod
     def predict(data, current_user):
@@ -33,15 +43,18 @@ class AAPDiagnosis:
         :type data: dict
         :type current_user: User
 
-        :return: The document model representing the data, without
-            the prediction
-        :rtype: AAPDiagnosisModel
+        :return: The document model representing the data, without the
+            prediction and an error message if there is one. If an error
+            occurs the None will be returned as the model.
+        :rtype: AAPBaseModel, None or None, str
         """
-        model = AAPDiagnosis._save_data(data, current_user)
-        make_prediction.delay(
-            str(model.id), model.to_json())
+        model, error = AAPDiagnosis._save_data(data, current_user)
 
-        return model
+        if model and not error:
+            make_prediction.delay(
+                str(model.id), model.to_json())
+
+        return model, error
 
 
 @celery.task(name='aap_diagnosis_predict')
@@ -54,15 +67,16 @@ def make_prediction(doc_id, data):
     :type doc_id: str
     :type data: dict
     """
-    classifier = GaussianNaiveBayes(
+    classifier = BernoulliNaiveBayes(
         AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL,
         AAPDiagnosis.MODEL.possible_labels)
 
     prediction = classifier.predict(json.loads(data))
 
     if prediction:
-        print("{} | Updating document '{}' with prediction: '{}'".format(
-            AAPDiagnosis.PROJECT_NAME, doc_id, prediction))
+        app.logger.info(
+            "{} | Updating document '{}' with prediction: '{}'".format(
+                AAPDiagnosis.PROJECT_NAME, doc_id, prediction))
 
         AAPDiagnosis.MODEL.objects.get(id=doc_id).update(
             set__t_diagnosis=prediction,
@@ -70,12 +84,16 @@ def make_prediction(doc_id, data):
 
 
 @celery.task(name='aap_diagnosis_train')
-def train_classifier():
+def train_classifier(force_retrain=False):
     """Periodic Celery task for retraining the ML model if the data has
     changed.
+
+    :param force_retrain: Whether to ignore if a model is already in the
+        process of being trained, default is False.
+    :type force_retrain: bool
     """
-    classifier = GaussianNaiveBayes(
+    classifier = BernoulliNaiveBayes(
         AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL,
         AAPDiagnosis.MODEL.possible_labels)
 
-    classifier.train()
+    classifier.train(force_retrain=force_retrain)

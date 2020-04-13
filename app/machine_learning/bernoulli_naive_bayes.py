@@ -1,14 +1,18 @@
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import BernoulliNB
 import pandas as pd
+from flask import current_app as app
 
 from app.machine_learning.ml_base.ml_base import MLBase
 
 
-class GaussianNaiveBayes(MLBase):
-    """Gaussian Naive Bayes classifier for use in projects."""
+class BernoulliNaiveBayes(MLBase):
+    """Bernoulli Naive Bayes classifier for use in projects with binary data,
+    for example a list of true/false values corresponding to a list of
+    symptoms.
+    """
 
     def __init__(self, project_name, db_model, labels):
-        """Initiate a Gaussian Naive Bayes classifier.
+        """Initiate a Bernoulli Naive Bayesian classifier.
 
         :param project_name: The name of the project.
         :param db_model: The database model class which the project uses.
@@ -19,28 +23,31 @@ class GaussianNaiveBayes(MLBase):
         :type db_model: subclass(MLModel)
         :type labels: dict{int: obj}
         """
-        super(GaussianNaiveBayes, self).__init__(
+        super(BernoulliNaiveBayes, self).__init__(
             project_name, db_model, labels)
 
-    def train(self):
-        """Train the Gaussian Naive Bayes classifier.
+    def train(self, force_retrain=False):
+        """Train the Bernoulli Naive Bayes classifier.
 
         The data needs to be prepared, normalised and separated first.
         After the training is complete the model is saved to MongoDB.
+
+        :param force_retrain: Whether to ignore if a model is already in the
+            process of being trained, default is False.
+        :type force_retrain: bool
         """
-        if not self._check_if_ml_model_is_already_training():
-            print("{} | Training Gaussian Naive Bayes classifier...".format(
-                self.project_name))
+        if not self._check_if_ml_model_is_already_training() or force_retrain:
+            app.logger.info("{} | Training Bernoulli Naive Bayes "
+                            "classifier...".format(self.project_name))
 
-            if not self.ml_model:
-                self.ml_model = GaussianNB()
-
+            self.ml_model = BernoulliNB()
             self.fetch_data()
             data, label_field = self.prepare_data(self.ml_data)
 
             if not data:
-                print("{} | No data found for training the ML algorithm"
-                      "".format(self.project_name))
+                app.logger.info(
+                    "{} | No data found for training the ML algorithm"
+                    "".format(self.project_name))
             else:
                 model = self._save_ml_model(training=True)
 
@@ -49,19 +56,20 @@ class GaussianNaiveBayes(MLBase):
                 ml_data = data.drop(label_field, axis=1)
                 label_values = data[label_field]
 
-                print("{} | Fitting model...".format(self.project_name))
+                app.logger.info("{} | Fitting model...".format(
+                    self.project_name))
+                self.ml_model.partial_fit(
+                    ml_data, label_values, classes=list(self.labels.values()))
 
-                self.ml_model.partial_fit(ml_data, label_values)
-
-                print("{} | Model fitted".format(self.project_name))
-
+                app.logger.info("{} | Model fitted".format(self.project_name))
                 self._save_ml_model(doc_id=model.id, ml_model=self.ml_model)
         else:
-            print("{} | A Gaussian Naive Bayes classifier is already in the "
-                  "process of being trained".format(self.project_name))
+            app.logger.info(
+                "{} | A Bernoulli Naive Bayes classifier is already in the "
+                "process of being trained".format(self.project_name))
 
     def predict(self, data):
-        """Returns the prediction of the Gaussian Naive Bayes classifier from
+        """Returns the prediction of the Bernoulli Naive Bayes classifier from
         the passed in data.
 
         :param data: Data to use for the prediction.
@@ -72,16 +80,17 @@ class GaussianNaiveBayes(MLBase):
         self._check_for_new_ml_model()
 
         if not self.ml_model:
-            raise EnvironmentError(
+            app.logger.warning(
                 'No machine learning models found for project: {}'.format(
                     self.project_name))
+            return
 
         data, label_field = self.prepare_data(
             data, ignore_unclassified=False)
 
         if not data:
-            print("{} | No data valid data found to make a prediction".format(
-                self.project_name))
+            app.logger.info("{} | No data valid data found to make a "
+                            "prediction".format(self.project_name))
 
         # Normalise the data and separate the target field
         data = pd.json_normalize(data)

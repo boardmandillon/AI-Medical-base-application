@@ -3,27 +3,15 @@ from app import db_mongo as db
 from .aap_questions import AAP_QUESTIONS, AAP_GYN_QUESTIONS
 
 
-class AAPDiagnosisModel(ProjectBase):
-    """Document definition for AAP diagnosis."""
-    possible_labels = {
-        "Appendicitis": 1,
-        "Diverticular Disease": 2,
-        "Perforated Ulcer": 3,
-        "Non Specific Abdominal Pain": 4,
-        "Cholecystitis": 5,
-        "Bowel Obstruction": 6,
-        "Pancreatitis": 7,
-        "Renal Colic": 8,
-        "Dyspepsia": 9,
-    }
-    number_symptoms = 136
-    questions = AAP_QUESTIONS
+class AAPBaseModel(ProjectBase):
+    """Base document model for the AAP and AAP gyn models."""
+    possible_labels = {}
+    number_symptoms = None
+    questions = None
 
     ml_symptoms = db.ListField(db.IntField(), required=True)
 
-    t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
-    l_actual_diagnosis = db.StringField(
-        choices=possible_labels.keys(), null=True)
+    meta = {'allow_inheritance': True}
 
     def from_dict(self, data):
         """Take the given dict and set the numerical values of the model
@@ -56,7 +44,7 @@ class AAPDiagnosisModel(ProjectBase):
             for a in received_answers:
                 a = a.lower().strip()
                 if a not in answers:
-                    invalid_answers.append("{}: {}".format(q, a))
+                    invalid_answers.append("{} = {}".format(q, a))
                     continue
                 else:
                     symptoms[answers[a] - 1] = 1
@@ -94,7 +82,32 @@ class AAPDiagnosisModel(ProjectBase):
         return questions
 
 
-class AAPGynDiagnosisModel(AAPDiagnosisModel):
+class AAPDiagnosisModel(AAPBaseModel):
+    """Document definition for AAP diagnosis."""
+    possible_labels = {
+        "Appendicitis": 1,
+        "Diverticular Disease": 2,
+        "Perforated Ulcer": 3,
+        "Non Specific Abdominal Pain": 4,
+        "Cholecystitis": 5,
+        "Bowel Obstruction": 6,
+        "Pancreatitis": 7,
+        "Renal Colic": 8,
+        "Dyspepsia": 9,
+    }
+    number_symptoms = 136
+    questions = AAP_QUESTIONS
+
+    t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
+    l_actual_diagnosis = db.StringField(
+        choices=possible_labels.keys(), null=True)
+
+    meta = {
+        'allow_inheritance': True,
+    }
+
+
+class AAPGynDiagnosisModel(AAPBaseModel):
     """Document definition for AAP diagnosis with additional gynae fields."""
     possible_labels = {
         "Appendicitis": 1,

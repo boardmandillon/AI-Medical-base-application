@@ -187,20 +187,29 @@ class MLBase(object):
         elif isinstance(data, list):
             data = list(data)
         else:
-            raise ValueError(
+            app.logger.error(
                 "{} | Data to prepare is in an incorrect format, should be "
                 "of type dict or list".format(self.project_name))
+            return
 
         ml_data = []
 
-        app.logger.info("{} | Deleting non 'ml_' fields...".format(
+        app.logger.info("{} | Deleting non 'ml_' and 'l_' fields...".format(
             self.project_name))
 
         for i in data:
             classified = False
+            extra_fields = {}
 
             for f in list(i.keys()):
-                if not f.startswith('ml_'):
+                if f.startswith('ml_'):
+                    # Expand list fields into separate fields
+                    if i[f] is not None and isinstance(i[f], list):
+                        for index, value in enumerate(i[f]):
+                            extra_fields[f + str(index)] = value
+                        del i[f]
+                else:
+                    # Set target and label fields
                     if f.startswith('l_'):
                         # Fetch numeric label from string
                         i[f] = self.labels.get(i.get(f))
@@ -228,7 +237,10 @@ class MLBase(object):
 
                         del i[f]
 
+            # Only include data that has a label in the training data set
             if classified or not ignore_unclassified:
+                if extra_fields:
+                    i.update(extra_fields)
                 ml_data.append(i)
 
         return ml_data, self.ml_label
