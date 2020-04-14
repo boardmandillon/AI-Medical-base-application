@@ -88,19 +88,20 @@ def image_pre_processing(diagnosis_photo):
     image = cv.imdecode(np_array, flags=1)
 
     contours = get_image_contours(image)
+    dipstick_contour = get_dipstick_contour(contours)
 
-    image = cv.drawContours(image, contours, -1, (0, 255, 0), 3)
+    image = cv.drawContours(image, [dipstick_contour], -1, (0, 255, 0), 3)
 
     out_filepath = '/Users/Miles/Desktop/'
     cv.imwrite(os.path.join(out_filepath, 'test.jpg'), image)
 
 
 def get_image_contours(image):
-    """ Gets the dipstick contours for extraction from the image.
+    """ Extracts image contours from the image.
 
     Image is converted to a grayscale and a bilateral filter is applied to reduce noise
-    and preserve edges. Canny filter is used to catch strong edges and then contours are
-    grabbed and sorted based on area from large to small.
+    and preserve edges. Then a canny filter is used to catch strong edges, contours are
+    grabbed and the ten largest contours are retrieved based on area.
     """
     image_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
     image_filtered = cv.bilateralFilter(image_gray, 15, 75, 75)
@@ -108,5 +109,26 @@ def get_image_contours(image):
 
     contours = cv.findContours(image_edges.copy(), cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     contours = imutils.grab_contours(contours)
-    contours = sorted(contours, key=cv.contourArea, reverse=True)
+    contours = sorted(contours, key=cv.contourArea, reverse=True)[:10]
     return contours
+
+
+def get_dipstick_contour(contours):
+    """ Searches contours for contour with four vertex points, rectangle/square shape.
+    When a rectangle/square is detected compute the bounding box and aspect ratio to
+    confirm its the rectangle dipstick.
+    """
+    dipstick_contour = None
+    for contour in contours:
+        perimeter = cv.arcLength(contour, True)
+        approx = cv.approxPolyDP(contour, 0.015 * perimeter, True)
+
+        if len(approx) == 4:
+            (x, y, width, height) = cv.boundingRect(approx)
+            aspect_ratio = float(width) / height
+
+            if aspect_ratio > 1.05:
+                dipstick_contour = approx
+                break
+
+    return dipstick_contour
