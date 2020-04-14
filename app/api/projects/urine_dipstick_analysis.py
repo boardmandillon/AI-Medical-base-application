@@ -89,15 +89,16 @@ def image_pre_processing(diagnosis_photo):
 
     contours = get_image_contours(image)
     dipstick_contour = get_dipstick_contour(contours)
+    dipstick = retrieve_dipstick_image(image, dipstick_contour)
 
-    image = cv.drawContours(image, [dipstick_contour], -1, (0, 255, 0), 3)
+    print("Shape: {}".format(dipstick.shape))
 
     out_filepath = '/Users/Miles/Desktop/'
-    cv.imwrite(os.path.join(out_filepath, 'test.jpg'), image)
+    cv.imwrite(os.path.join(out_filepath, 'test.jpg'), dipstick)
 
 
 def get_image_contours(image):
-    """ Extracts image contours from the image.
+    """ Extracts contours from the image.
 
     Image is converted to a grayscale and a bilateral filter is applied to reduce noise
     and preserve edges. Then a canny filter is used to catch strong edges, contours are
@@ -128,7 +129,29 @@ def get_dipstick_contour(contours):
             aspect_ratio = float(width) / height
 
             if aspect_ratio > 1.05:
-                dipstick_contour = approx
+                dipstick_contour = contour
                 break
 
     return dipstick_contour
+
+
+def retrieve_dipstick_image(image, contour):
+    """ Calculate the minimum area bounding the dipstick image, then apply a
+    rotation matrix to straighten the rectangle. If the dipstick has been rotated
+    into a vertical position it is rotated anticlockwise. The horizontal dipstick
+    image is then resized for extracting squares on the dipstick.
+    """
+    rectangle = cv.minAreaRect(contour)
+    center, size, theta = rectangle
+    height, width = image.shape[:2]
+
+    center, size = tuple(map(int, center)), tuple(map(int, size))
+    matrix = cv.getRotationMatrix2D(center, theta, 1)
+    dst = cv.warpAffine(image, matrix, (width, height))
+    dipstick = cv.getRectSubPix(dst, size, center)
+
+    if dipstick.shape[0] > dipstick.shape[1]:
+        dipstick = cv.rotate(dipstick, cv.ROTATE_90_COUNTERCLOCKWISE)
+
+    dipstick = imutils.resize(dipstick, width=800)
+    return dipstick
