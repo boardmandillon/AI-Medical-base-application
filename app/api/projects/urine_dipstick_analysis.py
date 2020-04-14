@@ -90,11 +90,16 @@ def image_pre_processing(diagnosis_photo):
     contours = get_image_contours(image)
     dipstick_contour = get_dipstick_contour(contours)
     dipstick = retrieve_dipstick_image(image, dipstick_contour)
+    dipstick_squares = get_dipstick_squares(dipstick)
 
     print("Shape: {}".format(dipstick.shape))
 
-    out_filepath = '/Users/Miles/Desktop/'
-    cv.imwrite(os.path.join(out_filepath, 'test.jpg'), dipstick)
+    # image = cv.drawContours(image, [dipstick_contour], -1, (0, 255, 0), 3)
+
+    out_filepath = '/Users/Miles/Desktop/Squares/'
+    cv.imwrite(os.path.join(out_filepath, 'dipstick.jpg'), dipstick)
+    for index, square in enumerate(dipstick_squares):
+        cv.imwrite(os.path.join(out_filepath, 'square' + str(index) + '.jpg'), square)
 
 
 def get_image_contours(image):
@@ -155,3 +160,24 @@ def retrieve_dipstick_image(image, contour):
 
     dipstick = imutils.resize(dipstick, width=800)
     return dipstick
+
+
+def get_dipstick_squares(dipstick):
+    """ Slices the dipstick image cropping out the ten squares on the dipstick
+    based on their position and saving them to a list.
+    """
+    dipstick_squares = []
+
+    square_start = 15
+    square_end = 50
+    square_size = 35
+    distance_between_squares = 20
+    next_square = (square_size + distance_between_squares)
+    for x in range(10):
+        square = dipstick[0:dipstick.shape[0], square_start:square_end]
+        dipstick_squares.append(square)
+
+        square_start += next_square
+        square_end += next_square
+
+    return dipstick_squares
