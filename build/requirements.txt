@@ -21,3 +21,5 @@ numpy==1.18.2
 redis==3.4.1
 celery==4.4.2
 pillow==7.1.1
+opencv-python==4.2.0.34
+imutils==0.5.3

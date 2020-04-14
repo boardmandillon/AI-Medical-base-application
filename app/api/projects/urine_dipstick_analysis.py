@@ -11,12 +11,17 @@ import io
 import base64
 import binascii
 import bson
+import numpy as np
+from cv2 import cv2 as cv
+import imutils
+import os
 
 
 @bp.route('/urine_dipstick_analysis/', methods=['POST'])
 @token_auth.login_required
-def create_urine_analysis():
-    """Creates diagnosis from JSON data in the request.
+def upload_urine_analysis_image():
+    """Extracts urine dipstick image from JSON data in the request.
+
     Decodes a base64 encoded image into binary form before sending
     to the project model. Verification of binary image data is done by
     PIL library.
@@ -48,9 +53,9 @@ def create_urine_analysis():
     return diagnosis.to_json(), 201
 
 
-@bp.route('/urine_dipstick_analysis_images/', methods=['GET'])
+@bp.route('/urine_dipstick_analysis/', methods=['GET'])
 @token_auth.login_required
-def get_urine_analyses_image():
+def get_urine_analysis():
     """Retrieves analysis image corresponding to a given document object ID
     passed as a URL parameter.
 
@@ -72,26 +77,36 @@ def get_urine_analyses_image():
     diagnosis_photo = user_data.diagnosis_photo.read()
     content_type = user_data.content_type
 
-    # do what you want with image here, example writing image to given path
-    extension = ''
-    if content_type == 'JPEG':
-        extension = '.jpg'
-    out_filepath = '/Users/Miles/Desktop/test' + extension
-    output = open(out_filepath, "wb")
-    output.write(diagnosis_photo)
-    output.close()
+    image_pre_processing(diagnosis_photo)
+
     data = {'message': 'image retrieved successfully'}
     return jsonify(data), 200
 
 
-@bp.route('/urine_dipstick_analysis/')
-@token_auth.login_required
-def get_urine_analyses():
-    """Retrieves analysis corresponding to the given query parameters.
+def image_pre_processing(diagnosis_photo):
+    np_array = np.frombuffer(diagnosis_photo, dtype=np.uint8)
+    image = cv.imdecode(np_array, flags=1)
 
-    For example using the following query will return the analysis results of
-    the user with an id of 1:
-        <base URL>/urine_dipstick_analysis?user_id=1
+    contours = get_image_contours(image)
+
+    image = cv.drawContours(image, contours, -1, (0, 255, 0), 3)
+
+    out_filepath = '/Users/Miles/Desktop/'
+    cv.imwrite(os.path.join(out_filepath, 'test.jpg'), image)
+
+
+def get_image_contours(image):
+    """ Gets the dipstick contours for extraction from the image.
+
+    Image is converted to a grayscale and a bilateral filter is applied to reduce noise
+    and preserve edges. Canny filter is used to catch strong edges and then contours are
+    grabbed and sorted based on area from large to small.
     """
-    query_params = request.args.to_dict()
-    return UrineDipstickModel.objects().filter(**query_params).to_json()
+    image_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+    image_filtered = cv.bilateralFilter(image_gray, 15, 75, 75)
+    image_edges = cv.Canny(image_filtered, 30, 200)
+
+    contours = cv.findContours(image_edges.copy(), cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    contours = imutils.grab_contours(contours)
+    contours = sorted(contours, key=cv.contourArea, reverse=True)
+    return contours
