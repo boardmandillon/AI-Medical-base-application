@@ -9,20 +9,27 @@ def image_pre_processing(diagnosis_photo):
     image = cv.imdecode(np_array, flags=1)
 
     contours = get_image_contours(image)
-    dipstick_contour = get_dipstick_contour(contours)
+    dipstick_contour, message = get_dipstick_contour(contours)
+
+    if dipstick_contour is None:
+        return False, 'failed to detect urine dipstick in uploaded image'
+    elif dipstick_contour is None and message == 'vertical':
+        return False, 'dipstick should be horizontal not vertical'
+
     dipstick = retrieve_dipstick_image(image, dipstick_contour)
     if dipstick is None:
-        return None
+        return False, 'failed to detect urine dipstick in uploaded image'
+
     dipstick_squares = get_dipstick_squares(dipstick)
 
     print("Shape: {}".format(dipstick.shape))
-
-    cv.drawContours(image, [dipstick_contour], -1, (0, 255, 0), 3)
 
     out_filepath = '/Users/Miles/Desktop/Squares/'
     cv.imwrite(os.path.join(out_filepath, 'dipstick.jpg'), dipstick)
     for index, square in enumerate(dipstick_squares):
         cv.imwrite(os.path.join(out_filepath, 'square' + str(index) + '.jpg'), square)
+
+    return True, 'urine dipstick image pre-processing complete'
 
 
 def get_image_contours(image):
@@ -60,9 +67,9 @@ def get_dipstick_contour(contours):
                 dipstick_contour = contour
                 break
             elif aspect_ratio < 0.95:
-                return None
+                return None, 'vertical'
 
-    return dipstick_contour
+    return dipstick_contour, 'complete'
 
 
 def retrieve_dipstick_image(image, contour):

@@ -74,7 +74,9 @@ def get_urine_analysis():
     diagnosis_photo = user_data.diagnosis_photo.read()
     content_type = user_data.content_type
 
-    image_pre_processing(diagnosis_photo)
+    results = image_pre_processing(diagnosis_photo)
+    if not results[0]:
+        return bad_request(results[1])
 
     data = {'message': 'image retrieved successfully'}
     return jsonify(data), 200
