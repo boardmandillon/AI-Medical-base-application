@@ -90,12 +90,16 @@ def make_prediction(doc_id, data):
 
 
 @celery.task(name='example_project_train')
-def train_classifier():
-    """"Periodic Celery task for retraining the ML model if the data has
+def train_classifier(force_retrain=False):
+    """Periodic Celery task for retraining the ML model if the data has
     changed.
+
+    :param force_retrain: Whether to ignore if a model is already in the
+        process of being trained, default is False.
+    :type force_retrain: bool
     """
     classifier = DecisionTree(
         ExampleProject.PROJECT_NAME, ExampleModel,
         ExampleModel.possible_labels)
 
-    classifier.train()
+    classifier.train(force_retrain=force_retrain)

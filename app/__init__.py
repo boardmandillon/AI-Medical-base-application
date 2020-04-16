@@ -81,9 +81,9 @@ def create_app(config_class=Config):
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
 
-    from app.commands import ml, cli_admin
-    app.register_blueprint(ml)
-    app.register_blueprint(cli_admin)
+    from app.commands import ml_bp, cli_admin_bp
+    app.register_blueprint(ml_bp)
+    app.register_blueprint(cli_admin_bp)
 
     # Initiate admin interface
     from app.models.user import User

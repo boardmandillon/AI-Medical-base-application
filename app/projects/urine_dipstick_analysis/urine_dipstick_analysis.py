@@ -13,8 +13,8 @@ class UrineDipstickAnalysis:
     def _save_data(data, current_user):
         """Save the passed in data to MongoDB."""
 
-        print("{} | Saving a new model with the data: {}".format(
-                UrineDipstickAnalysis.PROJECT_NAME, data))
+        app.logger.info("{} | Saving a new model with the data: {}".format(
+            UrineDipstickAnalysis.PROJECT_NAME, data))
 
         model = UrineDipstickModel(user_id=current_user.id, **data)
         model.save()
