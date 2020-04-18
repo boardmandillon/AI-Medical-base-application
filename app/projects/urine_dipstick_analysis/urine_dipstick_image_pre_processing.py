@@ -5,20 +5,31 @@ import os
 
 
 def image_pre_processing(diagnosis_photo):
+    """ Extracts the urine dipstick in the uploaded image, if successful returns
+    the ten squares found on the dipstick. Verification is done on the dipstick
+    making sure it is both horizontal and in reasonable lighting.
+    """
     np_array = np.frombuffer(diagnosis_photo, dtype=np.uint8)
     image = cv.imdecode(np_array, flags=1)
 
     contours = get_image_contours(image)
     dipstick_contour, message = get_dipstick_contour(contours)
 
-    if dipstick_contour is None:
-        return False, 'failed to detect urine dipstick in uploaded image'
-    elif dipstick_contour is None and message == 'vertical':
+    if dipstick_contour is None and message == 'vertical':
         return False, 'dipstick should be horizontal not vertical'
+    elif dipstick_contour is None:
+        return False, 'failed to detect urine dipstick in uploaded image'
 
     dipstick = retrieve_dipstick_image(image, dipstick_contour)
     if dipstick is None:
         return False, 'failed to detect urine dipstick in uploaded image'
+
+    verified, message = verify_dipstick(dipstick)
+    if not verified and message == 'rectangle size':
+        return False, 'failed to detect urine dipstick in uploaded image'
+    elif not verified and message == 'lighting':
+        return False, 'urine dipstick is in bad lighting or there is a shadow ' \
+                      'in the uploaded image'
 
     dipstick_squares = get_dipstick_squares(dipstick)
 
@@ -98,6 +109,39 @@ def retrieve_dipstick_image(image, contour):
     return dipstick
 
 
+def verify_dipstick(dipstick):
+    """ Verify that the dipstick doesn't exceed a height threshold and isn't a larger
+    rectangle being detected. Extract a small section from the front and end of the
+    dipstick to check the colour, in order to distinguish dipstick rectangle and check
+    lighting conditions of image.
+    """
+    if dipstick.shape[0] > 60:
+        return False, 'rectangle size'
+
+    dipstick_start = dipstick[0:dipstick.shape[0], 0:15]
+    dipstick_end = dipstick[0:dipstick.shape[0], 785:dipstick.shape[1]]
+
+    start_rgb = rgb_values(dipstick_start)
+    end_rgb = rgb_values(dipstick_end)
+    lower_white = 192
+    upper_white = 255
+    print(start_rgb, end_rgb)
+    for index in range(3):
+        if not lower_white <= start_rgb[index] <= upper_white:
+            return False, 'lighting'
+        elif not lower_white <= end_rgb[index] <= upper_white:
+            return False, 'lighting'
+
+    return True, 'verification complete'
+
+
+def rgb_values(image):
+    """ Extracts the mean red, green and blue values from an image.
+    """
+    rgb = [np.mean(image[:, :, 2]), np.mean(image[:, :, 1]), np.mean(image[:, :, 0])]
+    return rgb
+
+
 def get_dipstick_squares(dipstick):
     """ Slices the dipstick image cropping out the ten squares on the dipstick
     based on their position and saving them to a list.
@@ -109,7 +153,7 @@ def get_dipstick_squares(dipstick):
     square_size = 35
     distance_between_squares = 20
     next_square = (square_size + distance_between_squares)
-    for x in range(10):
+    for index in range(10):
         square = dipstick[0:dipstick.shape[0], square_start:square_end]
         dipstick_squares.append(square)
 
