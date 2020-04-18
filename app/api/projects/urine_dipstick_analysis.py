@@ -1,10 +1,11 @@
-from flask import request, g
-from flask import jsonify
+from flask import request, g, jsonify
 
 from app.api import bp
 from app.api.auth import token_auth
 from app.projects.urine_dipstick_analysis.urine_dipstick_model import \
     UrineDipstickModel
+from app.projects.urine_dipstick_analysis.urine_dipstick_image_pre_processing import \
+    image_pre_processing
 from app.api.errors import bad_request
 from PIL import Image
 import io
@@ -15,8 +16,9 @@ import bson
 
 @bp.route('/urine_dipstick_analysis/', methods=['POST'])
 @token_auth.login_required
-def create_urine_analysis():
-    """Creates diagnosis from JSON data in the request.
+def upload_urine_analysis_image():
+    """Extracts urine dipstick image from JSON data in the request.
+
     Decodes a base64 encoded image into binary form before sending
     to the project model. Verification of binary image data is done by
     PIL library.
@@ -48,9 +50,9 @@ def create_urine_analysis():
     return diagnosis.to_json(), 201
 
 
-@bp.route('/urine_dipstick_analysis_images/', methods=['GET'])
+@bp.route('/urine_dipstick_analysis/', methods=['GET'])
 @token_auth.login_required
-def get_urine_analyses_image():
+def get_urine_analysis():
     """Retrieves analysis image corresponding to a given document object ID
     passed as a URL parameter.
 
@@ -72,26 +74,9 @@ def get_urine_analyses_image():
     diagnosis_photo = user_data.diagnosis_photo.read()
     content_type = user_data.content_type
 
-    # do what you want with image here, example writing image to given path
-    extension = ''
-    if content_type == 'JPEG':
-        extension = '.jpg'
-    out_filepath = '/Users/Miles/Desktop/test' + extension
-    output = open(out_filepath, "wb")
-    output.write(diagnosis_photo)
-    output.close()
+    results = image_pre_processing(diagnosis_photo)
+    if not results[0]:
+        return bad_request(results[1])
+
     data = {'message': 'image retrieved successfully'}
     return jsonify(data), 200
-
-
-@bp.route('/urine_dipstick_analysis/')
-@token_auth.login_required
-def get_urine_analyses():
-    """Retrieves analysis corresponding to the given query parameters.
-
-    For example using the following query will return the analysis results of
-    the user with an id of 1:
-        <base URL>/urine_dipstick_analysis?user_id=1
-    """
-    query_params = request.args.to_dict()
-    return UrineDipstickModel.objects().filter(**query_params).to_json()
