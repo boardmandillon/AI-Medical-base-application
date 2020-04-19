@@ -9,12 +9,14 @@ from app.api.auth import token_auth
 @bp.route('/tokens', methods=['POST'])
 @basic_auth.login_required
 def get_token():
-    """Generates a token for a user and writes the token and expiration 
+    """Generates a token for a user and writes the token and expiration
     to the database
     """
     token = g.current_user.get_token()
     db.session.commit()
-    return jsonify({'token': token})
+    user_id = g.current_user.id
+    email = g.current_user.email
+    return jsonify({"user" :{'token': token, "id" : user_id, "email" : email}})
 
 
 @bp.route('tokens', methods=['DELETE'])
