@@ -16,7 +16,7 @@ def get_token():
     db.session.commit()
     user_id = g.current_user.id
     email = g.current_user.email
-    return jsonify({"user" :{'token': token, "id" : user_id, "email" : email}})
+    return jsonify({'token': token,"user" :{ "id" : user_id, "email" : email}})
 
 
 @bp.route('tokens', methods=['DELETE'])
