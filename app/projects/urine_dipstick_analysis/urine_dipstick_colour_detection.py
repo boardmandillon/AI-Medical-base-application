@@ -2,6 +2,8 @@ import numpy as np
 from cv2 import cv2 as cv
 from sklearn.cluster import KMeans
 from collections import Counter
+from skimage.color import rgb2lab
+import colour
 from pathlib import Path
 import os
 
@@ -19,8 +21,8 @@ def squares_colour_detection(dipstick_squares):
         training_images_colours = get_dominant_colour(test_category)
         test_group_colours.append(training_images_colours)
 
-    print(dipstick_squares_colours)
-    print(test_group_colours)
+    minimum_indices = match_image_by_colour(dipstick_squares_colours, test_group_colours)
+    print(minimum_indices)
 
 
 def get_dominant_colour(images):
@@ -50,8 +52,8 @@ def get_dominant_colour(images):
 
 def load_training_images():
     """ Loads in the training images for each of the test groups from a directory.
-        Returns a nested list, the outer list refers to the test groups and the inner
-        sub-lists contain images for all possible outcomes for a particular test.
+    Returns a nested list, the outer list refers to the test groups and the inner
+    sub-lists contain images for all possible outcomes for a particular test.
     """
     training_images = []
     cwd = Path(__file__).parent.absolute()
@@ -68,3 +70,29 @@ def load_training_images():
             training_images.append(test_category)
 
     return training_images
+
+
+def match_image_by_colour(images, training_images):
+    """ Loops through each test category comparing each square extracted from
+    the dipstick with all possible test outcomes, in order to find the two closest
+    matching colours for each test. To make the colour comparison RGB colours are
+    converted to LAB colours and the LAB DELTA E 2000 formula is computed. A list
+    is returned containing the indices corresponding to which colours for each test
+    had the closet match.
+    """
+    minimum_indices = []
+    minimum = 0
+    for index, test_category in enumerate(training_images):
+        minimum_delta_e = 101
+        for minimum_index, test in enumerate(test_category):
+            square_colour = rgb2lab(np.uint8([[images[index]]]))
+            test_colour = rgb2lab(np.uint8([[test]]))
+
+            delta_e = colour.delta_E(square_colour, test_colour)
+            if delta_e < minimum_delta_e:
+                minimum_delta_e = delta_e
+                minimum = minimum_index
+
+        minimum_indices.append(minimum)
+
+    return minimum_indices
