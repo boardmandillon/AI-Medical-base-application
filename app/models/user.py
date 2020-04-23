@@ -134,7 +134,7 @@ class User(UserMixin, db.Model):
         """
         now = datetime.utcnow()
         self.password_reset_token = base64.b64encode(
-            os.urandom(24)).decode('utf-8')
+            os.urandom(6)).decode('utf-8')
         self.password_reset_expiration = now + timedelta(seconds=expires_in)
         db.session.add(self)
         return self.password_reset_token

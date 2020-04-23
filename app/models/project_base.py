@@ -1,3 +1,5 @@
+import datetime
+
 from app import db_mongo as db
 
 
@@ -23,6 +25,8 @@ class ProjectBase(db.Document):
 
     # Automatically created fields
     index = db.IntField()
+    date_submitted = db.ComplexDateTimeField(default=datetime.datetime.utcnow)
+    date_modified = db.ComplexDateTimeField(default=datetime.datetime.utcnow)
 
     meta = {
         'allow_inheritance': True,
