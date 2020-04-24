@@ -1,3 +1,5 @@
+import json
+
 from app.models.project_base import ProjectBase
 from app import db_mongo as db
 from .aap_questions import AAP_QUESTIONS, AAP_GYN_QUESTIONS
@@ -8,6 +10,8 @@ class AAPBaseModel(ProjectBase):
     possible_labels = {}
     number_symptoms = None
     questions = None
+    t_diagnosis = None
+    l_actual_diagnosis = None
 
     ml_symptoms = db.ListField(db.IntField(), required=True)
 
@@ -68,18 +72,35 @@ class AAPBaseModel(ProjectBase):
         """Return a dict containing the questions and answers of the
         diagnosis from the stored numeric values.
         """
-        questions = {}
+        questions = {"answers": {}}
         for i, value in enumerate(self.ml_symptoms):
             if value:
                 for q in self.questions:
                     answers = self.questions[q]["answers"]
                     for a in answers:
                         if answers[a] == i + 1:
-                            if not questions.get(q):
-                                questions[q] = [a]
+                            if not questions["answers"].get(q):
+                                questions["answers"][q] = [a]
                             else:
-                                questions[q].append(a)
+                                questions["answers"][q].append(a)
+
+        questions.update(json.loads(self.to_json()))
         return questions
+
+    def set_actual_diagnosis(self, actual_diagnosis):
+        """Set the actual diagnosis field to confirm the real diagnosis.
+
+        :param actual_diagnosis: Actual diagnosis.
+        :type actual_diagnosis: str
+
+        :return: True if the disease exists, else False.
+        :rtype: bool
+        """
+        for i in self.possible_labels.keys():
+            if actual_diagnosis.lower() == i.lower():
+                self.l_actual_diagnosis = i
+                return True
+        return False
 
 
 class AAPDiagnosisModel(AAPBaseModel):
@@ -101,10 +122,6 @@ class AAPDiagnosisModel(AAPBaseModel):
     t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
     l_actual_diagnosis = db.StringField(
         choices=possible_labels.keys(), null=True)
-
-    meta = {
-        'allow_inheritance': True,
-    }
 
 
 class AAPGynDiagnosisModel(AAPBaseModel):

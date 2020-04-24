@@ -2,17 +2,59 @@ from flask import current_app as app
 
 import json
 
-from app.projects.aap_diagnosis.aap_diagnosis import AAPDiagnosis
 from app.projects.aap_diagnosis.aap_diagnosis_model import AAPGynDiagnosisModel
 from app.machine_learning.bernoulli_naive_bayes import BernoulliNaiveBayes
 from app import celery
 
 
-class AAPGynDiagnosis(AAPDiagnosis):
+class AAPGynDiagnosis:
     """AAP diagnosis project for diagnosing acute abdominal pain with gynae."""
 
     PROJECT_NAME = "AAPGynDiagnosis"
     MODEL = AAPGynDiagnosisModel
+
+    @staticmethod
+    def _save_data(data, current_user):
+        """Save the passed in data to MongoDB under the given user.
+
+        :return: Returns the model saved and an error message if there is one.
+            If an error occurs the None will be returned as the model.
+        :rtype: AAPGynDiagnosisModel, None or None, str
+        """
+
+        app.logger.info("{} | Saving a new model with the data: {}".format(
+            AAPGynDiagnosis.PROJECT_NAME, data))
+
+        model = AAPGynDiagnosis.MODEL(user_id=current_user.id)
+        try:
+            model.from_dict(data)
+        except ValueError as e:
+            return None, str(e)
+        model.save()
+
+        return model, None
+
+    @staticmethod
+    def predict(data, current_user):
+        """Calculate diagnosis prediction from the given data.
+
+        :param data: Data to use for prediction.
+        :param current_user: The user model to save the document under.
+        :type data: dict
+        :type current_user: User
+
+        :return: The document model representing the data, without the
+            prediction and an error message if there is one. If an error
+            occurs the None will be returned as the model.
+        :rtype: AAPGynDiagnosisModel, None or None, str
+        """
+        model, error = AAPGynDiagnosis._save_data(data, current_user)
+
+        if model and not error:
+            make_prediction.delay(
+                str(model.id), model.to_json())
+
+        return model, error
 
 
 @celery.task(name='aap_gyn_diagnosis_predict')
