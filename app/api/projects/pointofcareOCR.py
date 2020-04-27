@@ -9,9 +9,11 @@ from app.projects.pointofcare_ocr.pointofcare_model import POC_OCR_Model
 @token_auth.login_required
 def pocResult():
     """Creates diagnosis from JSON data in the request."""
-    print(request.headers)
+    if request.headers['Content-Type'] == 'application/json':
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict() or {}
 
-    data = request.form.to_dict() or {}
     time = data.get('time')
     systolic = data.get('systolic')
     diastolic = data.get('diastolic')
@@ -22,5 +24,3 @@ def pocResult():
     model.save()
 
     return jsonify(model), 201
-
-

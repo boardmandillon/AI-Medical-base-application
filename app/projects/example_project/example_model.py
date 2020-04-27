@@ -17,7 +17,6 @@ class ExampleModel(ProjectBase):
     ml_breathes = db.BooleanField(required=True)
     ml_legs = db.BooleanField(required=True)
 
-
     t_species = db.StringField(choices=possible_labels.keys(), null=True)
     l_actual_species = db.StringField(
         choices=possible_labels.keys(), null=True)
