@@ -8,10 +8,7 @@ class POC_OCR_Model(ProjectBase):
     assign the data. The labels have a unique numeric value assigned to them
     for use in training as the classifier can only use numeric labels.
     """
-    possible_labels = {
-        'diastolic': 0,
-        'systolic': 1
-    }
+    possible_labels = {}
 
     time = db.StringField(required=True)
     systolic = db.StringField(required=True)

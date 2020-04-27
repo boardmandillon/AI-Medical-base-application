@@ -7,7 +7,7 @@ from app.projects.pointofcare_ocr.pointofcare_model import POC_OCR_Model
 
 @bp.route('/pocresult', methods=['POST'])
 @token_auth.login_required
-def example_create():
+def pocResult():
     """Creates diagnosis from JSON data in the request."""
     print(request.headers)
 
@@ -24,9 +24,3 @@ def example_create():
     return jsonify(model), 201
 
 
-@bp.route('/poc')
-@token_auth.login_required
-def example_labels_get():
-    print(request.headers)
-    """Retrieves the possible labels which the data might be given."""
-    return jsonify(POC_OCR_Model.possible_labels)
