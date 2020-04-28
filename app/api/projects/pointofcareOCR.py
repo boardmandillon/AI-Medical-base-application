@@ -24,3 +24,11 @@ def pocResult():
     model.save()
 
     return jsonify(model), 201
+
+
+@bp.route('/pocresult')
+@token_auth.login_required
+def getPocRecords():
+    """Retrieves diagnoses of a user."""
+    return jsonify(POC_OCR_Model.objects().filter(
+        user_id=g.current_user.id))
