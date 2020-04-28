@@ -67,6 +67,5 @@ def example_update(doc_id):
 @bp.route('/example/labels')
 @token_auth.login_required
 def example_labels_get():
-    print(request.headers)
     """Retrieves the possible labels which the data might be given."""
     return jsonify(ExampleModel.possible_labels)

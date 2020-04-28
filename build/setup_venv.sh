@@ -1,5 +1,3 @@
-echo "Setting up the Vulture virtual environment"
-
 CURRENT_DIR=$(pwd)
 
 if [ "$1" = "-f" ] || [ "$1" = "--force" ]
@@ -18,7 +16,13 @@ then
 
       echo "Venv deleted successfully"
   fi
+elif [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  echo "Create the Python virtual environment under the venv directory"
+  echo -e "\t-f, \t--force \tRemove the current virtual environment under the venv directory"
+  exit 0
 fi
+
+echo "Setting up the Vulture virtual environment"
 
 echo -e "\nCreating a Python3 virtual environment named venv in $CURRENT_DIR\n"
 
