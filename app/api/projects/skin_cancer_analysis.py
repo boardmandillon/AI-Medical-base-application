@@ -1,79 +1,122 @@
-from flask import request, g, jsonify
-from app.api import bp
-from app.api.auth import token_auth
-from app.projects.skin_cancer_analysis.predictor import predictImage
-from app.projects.skin_cancer_analysis.skin_cancer_model import skinCancerModel
-from app.api.errors import bad_request
-from PIL import Image
-
-import io
 import base64
 import binascii
-import bson
+
+from io import BytesIO
+from PIL import Image
+from flask import request, g, jsonify
+
+from app.api import bp
+from app.api.auth import token_auth
+from app.api.errors import bad_request
+from app.api.decorators import user_role_required
+from app.models.user import UserRoles
+from app.projects.skin_cancer_analysis.predictor import predictImage
+from app.projects.skin_cancer_analysis.skin_cancer_model import skinCancerModel
 
 
-@bp.route('/skin_cancer_analysis/', methods=['POST'])
+@bp.route('/skin_cancer_analysis', methods=['POST'])
 @token_auth.login_required
-def upload_cancer_analysis_image():
+def skin_cancer_create_diagnosis():
     """Extracts cancer image from JSON data in the request.
 
     Decodes a base64 encoded image into binary form before sending
     to the project model. Verification of binary image data is done by
     PIL library.
     """
-    data = request.get_json() or {}
+    if request.headers['Content-Type'] == 'application/json':
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict() or {}
 
-    if not data.get('photo_base64'):
-        return bad_request('must include content type and photo data in request')
-    photo_base64 = data.get('photo_base64')
+        if not data.get('photo_base64'):
+            return bad_request('must include content type and photo data in request')
+        photo_base64 = data.get('photo_base64')
 
-    try:
-        diagnosis_photo = base64.b64decode(photo_base64, validate=True)
-    except binascii.Error:
-        return bad_request('failed to decode base64 string')
-    del data['photo_base64']
+        try:
+            diagnosis_photo = base64.b64decode(photo_base64, validate=True)
+        except binascii.Error:
+            return bad_request('failed to decode base64 string')
+        del data['photo_base64']
 
-    try:
-        image = Image.open(io.BytesIO(diagnosis_photo))
-        image.verify()
-        content_type = image.format
-        image.close()
-    except IOError:
-        return bad_request('image file is not valid')
+        try:
+            imageBytes = BytesIO(diagnosis_photo)
+            image = Image.open(imageBytes)
 
-    diagnosis = skinCancerModel(user_id=g.current_user.id, content_type=content_type,
-                                **data, diagnosis_photo=diagnosis_photo)
-    diagnosis.save()
+            image.save(r"app/projects/skin_cancer_analysis/image/data/image.jpg", "JPEG")
 
-    return diagnosis.to_json(), 201
+            content_type = image.format
+            image.close()
+        except IOError:
+            return bad_request('image file is not valid')
+
+        diagnosis = skinCancerModel(user_id=g.current_user.id, content_type=content_type,
+                                    **data, diagnosis_photo=diagnosis_photo)
+        diagnosis.save()
+
+    return jsonify(diagnosis), 201
 
 
-@bp.route('/skin_cancer_analysis/', methods=['GET'])
+@bp.route('/skin_cancer_analysis', methods=['GET'])
 @token_auth.login_required
-def get_cancer_analysis():
+def skin_cancer_get_diagnosis():
     """Retrieves analysis image corresponding to a given document object ID
     passed as a URL parameter.
 
-    For example <base URL>/urine_dipstick_analysis_images?id=<object ID here>
+    For example <base URL>/skin_cancer_analysis_images?id=<object ID here>
     """
-    data = request.args.to_dict()
+    try:
+        prediction = predictImage()
+        pred = skinCancerModel(user_id=g.current_user.id, t_diagnosis=prediction)
+        pred.save()
+    except IOError:
+        return bad_request('image file is not valid')
 
-    if not data.get('id'):
-        return bad_request('must include image file id')
-    object_id = data.get('id')
+    with open(r"app/projects/skin_cancer_analysis/image/data/image.jpg", "rb") as image:
+        f = image.read()
+        b = bytearray(f)
 
-    if not skinCancerModel.objects.get(
-            user_id=g.current_user.id,
-            diagnosis_photo=bson.objectid.ObjectId(object_id)):
-        return bad_request('no file with the id: ' + data.get('id') + ' for this user')
+    diagnosis_photo = base64.b64encode(b)
+    response = {'prediction': prediction, 'image': diagnosis_photo.decode('utf-8')}
 
-    user_data = skinCancerModel.objects.get(
-        user_id=g.current_user.id, diagnosis_photo=bson.objectid.ObjectId(object_id))
-    diagnosis_photo = user_data.diagnosis_photo.read()
-    #content_type = user_data.content_type
+    return jsonify(response), 200
 
-    diagnosis_photo.save(r"image/data/image.jpg")
-    prediction = predictImage()
 
-    data = {'message': 'image retrieved successfully'}
-    return jsonify(prediction=prediction), 200
+@bp.route('/records/')
+@token_auth.login_required
+def getRecords():
+    """Retrieves a users documents."""
+    return jsonify(skinCancerModel.objects().filter(
+        user_id=g.current_user.id))
+
+
+@bp.route('/skin_cancer_analysis/<doc_id>', methods=['DELETE'])
+@token_auth.login_required
+def skin_cancer_diagnosis_delete_from_id(doc_id):
+    """Deletes record corresponding to the given ID."""
+    skinCancerModel.objects.get_or_404(
+        id=doc_id, user_id=g.current_user.id).delete()
+    return jsonify({"success": True})
+
+
+@bp.route('/skin_cancer_analysis/<doc_id>', methods=['PATCH'])
+@token_auth.login_required
+@user_role_required(UserRoles.USER)
+def skin_cancer_diagnosis_update(doc_id):
+    """Updates fields of the document from the JSON data in the request."""
+    if request.headers['Content-Type'] == 'application/json':
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict() or {}
+
+    model = skinCancerModel.objects.get_or_404(
+        id=doc_id, user_id=g.current_user.id)
+    model.save(data)
+
+    return jsonify(model)
+
+
+@bp.route('/skin_cancer_analysis/labels')
+@token_auth.login_required
+def skin_cancer_analysis_labels_get():
+    """Retrieves the possible labels which the data might be given."""
+    return jsonify(skinCancerModel.possible_labels)
