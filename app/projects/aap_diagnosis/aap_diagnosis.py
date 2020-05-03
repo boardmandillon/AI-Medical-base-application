@@ -19,7 +19,7 @@ class AAPDiagnosis:
 
         :return: Returns the model saved and an error message if there is one.
             If an error occurs the None will be returned as the model.
-        :rtype: AAPBaseModel, None or None, str
+        :rtype: AAPDiagnosisModel, None or None, str
         """
 
         app.logger.info("{} | Saving a new model with the data: {}".format(
@@ -46,7 +46,7 @@ class AAPDiagnosis:
         :return: The document model representing the data, without the
             prediction and an error message if there is one. If an error
             occurs the None will be returned as the model.
-        :rtype: AAPBaseModel, None or None, str
+        :rtype: AAPDiagnosisModel, None or None, str
         """
         model, error = AAPDiagnosis._save_data(data, current_user)
 
