@@ -15,6 +15,5 @@ class POC_OCR_Model(ProjectBase):
     systolic = db.StringField(required=True)
     diastolic = db.StringField(required=True)
     heartRate = db.StringField(required=True)
-    date_submitted = db.ComplexDateTimeField(default=datetime.datetime.utcnow)
 
 
