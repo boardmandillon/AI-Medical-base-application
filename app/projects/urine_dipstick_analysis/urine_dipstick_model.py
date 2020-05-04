@@ -1,8 +1,6 @@
 from app.models.project_base import ProjectBase
 from app import db_mongo as db
 
-from datetime import datetime
-
 
 class UrineDipstickModel(ProjectBase):
     """Document definition for the urine dipstick analysis project.

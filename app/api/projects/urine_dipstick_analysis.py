@@ -74,7 +74,6 @@ def get_urine_analysis():
     user_data = UrineDipstickModel.objects.get(
         user_id=g.current_user.id, diagnosis_photo=bson.objectid.ObjectId(object_id))
     diagnosis_photo = user_data.diagnosis_photo.read()
-    content_type = user_data.content_type
 
     results = image_pre_processing(diagnosis_photo)
     dipstick_squares = None
@@ -83,7 +82,7 @@ def get_urine_analysis():
     elif results[0]:
         dipstick_squares = results[1]
 
-    squares_colour_detection(dipstick_squares)
+    diagnosis_results = squares_colour_detection(dipstick_squares)
 
-    data = {'message': 'image retrieved successfully'}
+    data = diagnosis_results
     return jsonify(data), 200
