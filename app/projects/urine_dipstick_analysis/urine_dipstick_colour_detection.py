@@ -9,11 +9,10 @@ import os
 
 
 def squares_colour_detection(dipstick_squares):
-
-    for index, square in enumerate(dipstick_squares):
-        out_filepath = '/Users/Miles/Desktop/Squares/'
-        cv.imwrite(os.path.join(out_filepath, 'square' + str(index) + '.jpg'), square)
-
+    """ Obtains the diagnosis results from the squares extracted from the uploaded image.
+    Returns a dictionary containing ten results for each of the different test groups on
+    the urine dipstick.
+    """
     dipstick_squares_colours = get_dominant_colour(dipstick_squares)
     training_images = load_training_images()
     test_group_colours = []
@@ -22,7 +21,9 @@ def squares_colour_detection(dipstick_squares):
         test_group_colours.append(training_images_colours)
 
     minimum_indices = match_image_by_colour(dipstick_squares_colours, test_group_colours)
-    print(minimum_indices)
+    diagnosis_results = convert_diagnosis_results(minimum_indices)
+
+    return diagnosis_results
 
 
 def get_dominant_colour(images):
@@ -96,3 +97,44 @@ def match_image_by_colour(images, training_images):
         minimum_indices.append(minimum)
 
     return minimum_indices
+
+
+def convert_diagnosis_results(diagnosis_data):
+    """ Translates the list of indices into human readable diagnosis results
+    """
+    leukocyctes_results = ['negative', 'trace', '+70 WBC μL', '++125 WBC μL',
+                           '+++500 WBC μL']
+    nitrate_results = ['negative', 'trace', 'positive']
+    urobilinogen_results = ['0.1 mg/dL normal', '1 (16) mg/dL (μmol/L) normal',
+                            '2 (33) mg/dL (μmol/L)', '4 (66) mg/dL (μmol/L)',
+                            '8 (131) mg/dL (μmol/L)']
+    protein_results = ['negative', 'trace', '+30 (0.3) mg/dL (g/L)',
+                       '++100 (1,0) mg/dL (g/L)', '+++300 (3.0) mg/dL (g/L)',
+                       '++++1000 (10) mg/dL (g/L)']
+    ph_results = ['5', '6', '6.5', '7', '7.5', '8', '8.5']
+    blood_results = ['negative', 'trace hemolysis', '+25 RBC/μL hemolysis',
+                     '++80 RBC/μL hemolysis', '+++200 RBC/μL hemolysis',
+                     '+10 RBC/μL non hemolysis', '++80 RBC/μL non hemolysis']
+    specific_gravity_results = ['1.000', '1.005', '1.010', '1.015', '1.020',
+                                '1.025', '1.030']
+    ketones_results = ['negative', '+/-5 (0.5) mg/dL (mmol/L)',
+                       '+15 (1.5) mg/dL (mmol/L)', '++40 (3.9) mg/dL (mmol/L)',
+                       '+++80 (8) mg/dL (mmol/L)', '++++160 (16) mg/dL (mmol/L)']
+    bilirubin_results = ['negative', '+', '++', '+++']
+    glucose_results = ['negative', '+/-100 (5.5) mg/dL (mmol/L)',
+                       '+250 (14) mg/dL (mmol/L)', '++500 (28) mg/dL (mmol/L)',
+                       '+++1000 (55) mg/dL (mmol/L)', '++++2000 (111) mg/dL (mmol/L)']
+
+    diagnosis_results = {'leukocyctes': leukocyctes_results[diagnosis_data[0]],
+                         'nitrate': nitrate_results[diagnosis_data[1]],
+                         'urobilinogen': urobilinogen_results[diagnosis_data[2]],
+                         'protein': protein_results[diagnosis_data[3]],
+                         'pH': ph_results[diagnosis_data[4]],
+                         'blood': blood_results[diagnosis_data[5]],
+                         'specific gravity':
+                         specific_gravity_results[diagnosis_data[6]],
+                         'ketones': ketones_results[diagnosis_data[7]],
+                         'bilirubin': bilirubin_results[diagnosis_data[8]],
+                         'glucose': glucose_results[diagnosis_data[9]]}
+
+    return diagnosis_results
