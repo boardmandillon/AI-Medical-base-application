@@ -6,6 +6,8 @@ from app.projects.urine_dipstick_analysis.urine_dipstick_model import \
     UrineDipstickModel
 from app.projects.urine_dipstick_analysis.urine_dipstick_image_pre_processing import \
     image_pre_processing
+from app.projects.urine_dipstick_analysis.urine_dipstick_colour_detection import \
+    squares_colour_detection
 from app.api.errors import bad_request
 from PIL import Image
 import io
@@ -72,11 +74,15 @@ def get_urine_analysis():
     user_data = UrineDipstickModel.objects.get(
         user_id=g.current_user.id, diagnosis_photo=bson.objectid.ObjectId(object_id))
     diagnosis_photo = user_data.diagnosis_photo.read()
-    content_type = user_data.content_type
 
     results = image_pre_processing(diagnosis_photo)
+    dipstick_squares = None
     if not results[0]:
         return bad_request(results[1])
+    elif results[0]:
+        dipstick_squares = results[1]
 
-    data = {'message': 'image retrieved successfully'}
+    diagnosis_results = squares_colour_detection(dipstick_squares)
+
+    data = diagnosis_results
     return jsonify(data), 200

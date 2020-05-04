@@ -1,7 +1,6 @@
 import numpy as np
 from cv2 import cv2 as cv
 import imutils
-import os
 
 
 def image_pre_processing(diagnosis_photo):
@@ -33,14 +32,7 @@ def image_pre_processing(diagnosis_photo):
 
     dipstick_squares = get_dipstick_squares(dipstick)
 
-    print("Shape: {}".format(dipstick.shape))
-
-    out_filepath = '/Users/Miles/Desktop/Squares/'
-    cv.imwrite(os.path.join(out_filepath, 'dipstick.jpg'), dipstick)
-    for index, square in enumerate(dipstick_squares):
-        cv.imwrite(os.path.join(out_filepath, 'square' + str(index) + '.jpg'), square)
-
-    return True, 'urine dipstick image pre-processing complete'
+    return True, dipstick_squares
 
 
 def get_image_contours(image):
@@ -125,7 +117,6 @@ def verify_dipstick(dipstick):
     end_rgb = rgb_values(dipstick_end)
     lower_white = 192
     upper_white = 255
-    print(start_rgb, end_rgb)
     for index in range(3):
         if not lower_white <= start_rgb[index] <= upper_white:
             return False, 'lighting'
