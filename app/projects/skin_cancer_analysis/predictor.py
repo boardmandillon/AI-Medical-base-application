@@ -3,6 +3,7 @@ import numpy as np
 
 from keras_preprocessing.image import ImageDataGenerator
 from tensorflow.python.keras.models import load_model
+from pathlib import Path
 
 IMG_HEIGHT = 224
 IMG_WIDTH = 224
@@ -34,7 +35,7 @@ def predictImage():
 
         The prediction is then returned.
     """
-    imageDirectory = r'app\projects\skin_cancer_analysis\image'
+    imageDirectory = Path('app\projects\skin_cancer_analysis\image')
 
     data_generator = ImageDataGenerator(preprocessing_function=keras.applications.mobilenet.preprocess_input)
 
@@ -44,7 +45,7 @@ def predictImage():
                                              class_mode=None
                                              )
 
-    model = load_model(r"app\projects\skin_cancer_analysis\model.h5")
+    model = load_model(Path("app\projects\skin_cancer_analysis\model.h5"))
     pred = model.predict_generator(img)
 
     pred = np.round(pred, 2)

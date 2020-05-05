@@ -31,30 +31,30 @@ def skin_cancer_create_diagnosis():
     else:
         data = request.form.to_dict() or {}
 
-        if not data.get('photo_base64'):
-            return bad_request('must include content type and photo data in request')
-        photo_base64 = data.get('photo_base64')
+    if not data.get('photo_base64'):
+        return bad_request('must include content type and photo data in request')
+    photo_base64 = data.get('photo_base64')
 
-        try:
-            diagnosis_photo = base64.b64decode(photo_base64, validate=True)
-        except binascii.Error:
-            return bad_request('failed to decode base64 string')
-        del data['photo_base64']
+    try:
+        diagnosis_photo = base64.b64decode(photo_base64, validate=True)
+    except binascii.Error:
+        return bad_request('failed to decode base64 string')
+    del data['photo_base64']
 
-        try:
-            imageBytes = BytesIO(diagnosis_photo)
-            image = Image.open(imageBytes)
+    try:
+        imageBytes = BytesIO(diagnosis_photo)
+        image = Image.open(imageBytes)
 
-            image.save(r"app/projects/skin_cancer_analysis/image/data/image.jpg", "JPEG")
+        image.save(r"app/projects/skin_cancer_analysis/image/data/image.jpg", "JPEG")
 
-            content_type = image.format
-            image.close()
-        except IOError:
-            return bad_request('image file is not valid')
+        content_type = image.format
+        image.close()
+    except IOError:
+        return bad_request('image file is not valid')
 
-        diagnosis = skinCancerModel(user_id=g.current_user.id, content_type=content_type,
-                                    **data, diagnosis_photo=diagnosis_photo)
-        diagnosis.save()
+    diagnosis = skinCancerModel(user_id=g.current_user.id, content_type=content_type,
+                                **data, diagnosis_photo=diagnosis_photo)
+    diagnosis.save()
 
     return jsonify(diagnosis), 201
 
