@@ -20,15 +20,15 @@ class Config(object):
 
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'RELATIONAL_DB_URI',
-        'postgresql://vulture:vultureF5MB@0.0.0.0:5432/vulturePostgres')
+        'postgresql://vulture:vulturejP!^vx,E7z@0.0.0.0:5432/vulturePostgres')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     MONGODB_DB = os.environ.get('MONGODB_DATABASE', 'vultureMongo')
     MONGODB_HOST = os.environ.get('MONGODB_HOST', '0.0.0.0')
     MONGODB_PORT = int(os.environ.get('MONGODB_PORT', 27017))
     MONGODB_CONNECT = False
-    # MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', 'user')
-    # MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', 'password')
+    MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', 'vulture')
+    MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD', 'vultureUG6>3csK)6')
 
     REDIS_URL = os.environ.get('REDIS_URL', 'redis://')
     CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://')
