@@ -20,8 +20,11 @@ def skin_cancer_create_diagnosis():
     """Extracts cancer image from JSON data in the request.
 
     Decodes a base64 encoded image into binary form before sending
-    to the project model. Verification of binary image data is done by
-    PIL library.
+    to the project model. The image is also saved locally to be
+    used for prediction. Each time the method is called the
+    image is saved with the same name, overwritting the previous image.
+
+    Verification of binary image data is done by PIL library.
     """
     if request.headers['Content-Type'] == 'application/json':
         data = request.get_json() or {}
@@ -59,10 +62,13 @@ def skin_cancer_create_diagnosis():
 @bp.route('/skin_cancer_analysis', methods=['GET'])
 @token_auth.login_required
 def skin_cancer_get_diagnosis():
-    """Retrieves analysis image corresponding to a given document object ID
-    passed as a URL parameter.
+    """Called straight after skin_cancer_create_diagnosis().
+    The predictor class is called and a prediction is output
+    from the image saved previously and saved in the model.
 
-    For example <base URL>/skin_cancer_analysis_images?id=<object ID here>
+    Once the prediction is received and saved, both the
+    prediction and image are returned.
+
     """
     try:
         prediction = predictImage()
@@ -81,12 +87,11 @@ def skin_cancer_get_diagnosis():
     return jsonify(response), 200
 
 
-@bp.route('/records/')
+@bp.route('/records')
 @token_auth.login_required
 def getRecords():
-    """Retrieves a users documents."""
-    return jsonify(skinCancerModel.objects().filter(
-        user_id=g.current_user.id))
+    """Retrieves all records relating to the user currently logged in."""
+    return jsonify(skinCancerModel.objects().filter(user_id=g.current_user.id))
 
 
 @bp.route('/skin_cancer_analysis/<doc_id>', methods=['DELETE'])

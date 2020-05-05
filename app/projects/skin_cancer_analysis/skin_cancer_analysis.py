@@ -5,7 +5,7 @@ from app import celery
 
 
 class SkinCancerAnalysis:
-    """Skin Cancer diagnosis project for diagnosing urinary tract infection."""
+    """Skin Cancer diagnosis project for diagnosing various forms of skin cancer."""
 
     PROJECT_NAME = "SkinCancerAnalysis"
 

@@ -20,11 +20,11 @@ class Config(object):
 
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'RELATIONAL_DB_URI',
-        'postgresql://vulture:vultureF5MB@0.0.0.0:5432/vulturePostgres')
+        'postgresql://vulture:vultureF5MB@192.168.99.100:5432/vulturePostgres')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     MONGODB_DB = os.environ.get('MONGODB_DATABASE', 'vultureMongo')
-    MONGODB_HOST = os.environ.get('MONGODB_HOST', '0.0.0.0')
+    MONGODB_HOST = os.environ.get('MONGODB_HOST', '192.168.99.100')
     MONGODB_PORT = int(os.environ.get('MONGODB_PORT', 27017))
     MONGODB_CONNECT = False
     # MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME', 'user')
