@@ -5,8 +5,8 @@ services:
         ports:
             - "27017:27017"
         environment:
-#            MONGO_INITDB_ROOT_USERNAME: user
-#            MONGO_INITDB_ROOT_PASSWORD: password
+            MONGO_INITDB_ROOT_USERNAME: vulture
+            MONGO_INITDB_ROOT_PASSWORD: vultureUG6>3csK)6
             MONGO_INITDB_DATABASE: vultureMongo
         networks:
             - vulture-dev
@@ -18,6 +18,7 @@ services:
                 window: 120s
         volumes:
             - mongo-datavolume:/data/db/
+            - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
 
     postgres:
         image: "postgres:12.1"
@@ -25,7 +26,7 @@ services:
             - "5432:5432"
         environment:
             POSTGRES_USER: vulture
-            POSTGRES_PASSWORD: vultureF5MB
+            POSTGRES_PASSWORD: vulturejP!^vx,E7z
             POSTGRES_DB: vulturePostgres
         networks:
             - vulture-dev

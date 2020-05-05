@@ -11,10 +11,12 @@ services:
                 max_attempts: 3
                 window: 120s
         environment:
-            RELATIONAL_DB_URI: postgresql://vulture:vultureF5MB@postgres:5432/vulturePostgres
+            RELATIONAL_DB_URI: postgresql://vulture:vulturejP!^vx,E7z@postgres:5432/vulturePostgres
             MONGODB_DB: vultureMongo
             MONGODB_HOST: mongo
             MONGODB_PORT: 27017
+            MONGODB_USERNAME: vulture
+            MONGODB_PASSWORD: vultureUG6>3csK)6
         networks:
             - vulture-dev
         depends_on:
@@ -29,8 +31,8 @@ services:
         ports:
             - "27017:27017"
         environment:
-#            MONGO_INITDB_ROOT_USERNAME: user
-#            MONGO_INITDB_ROOT_PASSWORD: password
+            MONGO_INITDB_ROOT_USERNAME: vulture
+            MONGO_INITDB_ROOT_PASSWORD: vultureUG6>3csK)6
             MONGO_INITDB_DATABASE: vultureMongo
         networks:
             - vulture-dev
@@ -42,6 +44,7 @@ services:
                 window: 120s
         volumes:
             - mongo-datavolume:/data/db/
+            - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
 
     postgres:
         image: "postgres:latest"
@@ -49,7 +52,7 @@ services:
             - "5432:5432"
         environment:
             POSTGRES_USER: vulture
-            POSTGRES_PASSWORD: vultureF5MB
+            POSTGRES_PASSWORD: vulturejP!^vx,E7z
             POSTGRES_DB: vulturePostgres
         networks:
             - vulture-dev
