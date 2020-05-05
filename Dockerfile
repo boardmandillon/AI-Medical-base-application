@@ -11,6 +11,10 @@ RUN useradd -ms /bin/bash base-application
 # Set working directory to the new user's home directory
 WORKDIR /home/base-application
 
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    libgtk2.0-dev
+
 # Setup Python and install Python requirements
 COPY build/requirements.txt requirements.txt
 RUN python -m venv venv
