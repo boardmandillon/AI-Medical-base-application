@@ -17,12 +17,15 @@ services:
             MONGODB_PORT: 27017
             MONGODB_USERNAME: vulture
             MONGODB_PASSWORD: vultureUG6>3csK)6
+            REDIS_URL: redis://redis-broker:6379
+            CELERY_BROKER_URL: redis://redis-broker:6379
+            CELERY_RESULT_BACKEND: redis://redis-broker:6379
         networks:
             - vulture-dev
         depends_on:
             - "mongo"
             - "postgres"
-            - "redis"
+            - "redis-broker"
 
     mongo:
         image: "mongo:latest"
@@ -63,7 +66,7 @@ services:
         volumes:
             - postgres-datavolume:/var/lib/postgresql
 
-    redis:
+    redis-broker:
         image: "redis:5.0.7"
         ports:
             - "6379:6379"
@@ -90,15 +93,18 @@ services:
                 max_attempts: 3
                 window: 120s
         environment:
-            RELATIONAL_DB_URI: postgresql://vulture:vultureF5MB@postgres:5432/vulturePostgres
+            RELATIONAL_DB_URI: postgresql://vulture:vulturejP!^vx,E7z@postgres:5432/vulturePostgres
             MONGODB_DB: vultureMongo
             MONGODB_HOST: mongo
             MONGODB_PORT: 27017
-        volumes:
-            - .:/base-application
+            MONGODB_USERNAME: vulture
+            MONGODB_PASSWORD: vultureUG6>3csK)6
+            REDIS_URL: redis://redis-broker:6379
+            CELERY_BROKER_URL: redis://redis-broker:6379
+            CELERY_RESULT_BACKEND: redis://redis-broker:6379
 
     celery-beat:
-        build: ../
+        image: "registry.gitlab.com/comp3931-vulture/base-application"
         command: celery beat -A celery_worker.celery --loglevel=info
         networks:
             - vulture-dev
@@ -109,12 +115,15 @@ services:
                 max_attempts: 3
                 window: 120s
         environment:
-            RELATIONAL_DB_URI: postgresql://vulture:vultureF5MB@postgres:5432/vulturePostgres
+            RELATIONAL_DB_URI: postgresql://vulture:vulturejP!^vx,E7z@postgres:5432/vulturePostgres
             MONGODB_DB: vultureMongo
             MONGODB_HOST: mongo
             MONGODB_PORT: 27017
-        volumes:
-            - .:/base-application
+            MONGODB_USERNAME: vulture
+            MONGODB_PASSWORD: vultureUG6>3csK)6
+            REDIS_URL: redis://redis-broker:6379
+            CELERY_BROKER_URL: redis://redis-broker:6379
+            CELERY_RESULT_BACKEND: redis://redis-broker:6379
         depends_on:
             - "celery"
 
