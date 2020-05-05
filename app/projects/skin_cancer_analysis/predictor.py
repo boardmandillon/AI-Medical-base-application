@@ -9,6 +9,31 @@ IMG_WIDTH = 224
 
 
 def predictImage():
+    """ Takes no arguments.
+        Predicts the classification of the image in the directory:
+
+        'app\projects\skin_cancer_analysis\image'
+
+        Note: The filepath above is used for windows.
+        If the directory is not found, reverse the '\'
+        e.g.
+
+        'app/projects/skin_cancer_analysis/image'
+
+        Takes the file as input and pre-processes the image through the
+        ImageDataGenerator.
+
+        IMG_HEIGHT = 224
+        IMG_WIDTH = 224
+
+        The target size of the image flowing from the directory above.
+
+        The classification prediction output is rounded to 2 decimal places,
+        stripped of the 2 characters either side of the value and multiplied
+        by 100 to a percentage.
+
+        The prediction is then returned.
+    """
     imageDirectory = r'app\projects\skin_cancer_analysis\image'
 
     data_generator = ImageDataGenerator(preprocessing_function=keras.applications.mobilenet.preprocess_input)
