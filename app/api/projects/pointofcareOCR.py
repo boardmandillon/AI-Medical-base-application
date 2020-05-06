@@ -8,7 +8,7 @@ from app.projects.pointofcare_ocr.pointofcare_model import POC_OCR_Model
 @bp.route('/pocresult', methods=['POST'])
 @token_auth.login_required
 def pocResult():
-    """Creates diagnosis from JSON data in the request."""
+    """Creates record of Blood pressure results from JSON data in the request."""
     if request.headers['Content-Type'] == 'application/json':
         data = request.get_json() or {}
     else:
@@ -29,7 +29,7 @@ def pocResult():
 @bp.route('/pocresult')
 @token_auth.login_required
 def getPocRecords():
-    """Retrieves diagnoses of a user."""
+    """Retrieves records of a user."""
     return jsonify(POC_OCR_Model.objects().filter(
         user_id=g.current_user.id))
 
@@ -37,7 +37,7 @@ def getPocRecords():
 @bp.route('/pocresult/<doc_id>', methods=['DELETE'])
 @token_auth.login_required
 def poc_delete_from_id(doc_id):
-    """Deletes diagnosis corresponding to the given ID."""
+    """Deletes records corresponding to the given ID."""
     POC_OCR_Model.objects.get_or_404(
         id=doc_id, user_id=g.current_user.id).delete()
     return jsonify({"success": True})
