@@ -8,7 +8,7 @@ from app import celery
 
 
 class PointOfCareOCR:
-    """Example machine learning project class to use when defining your own."""
+    """Point of care OCR project class for uploading results from PoC device to electronic record """
 
     PROJECT_NAME = "PointOfCareOCR"
 
