@@ -20,7 +20,7 @@ def login():
 
             if not user or not user.check_password(form.password.data) or \
                     not user.is_admin():
-                flash('Invalid username or password')
+                flash('Invalid email or password')
 
                 return redirect(url_for('auth.login'))
             else:
