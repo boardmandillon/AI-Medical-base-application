@@ -1,12 +1,10 @@
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-
-import base64
-from datetime import datetime, timedelta
-import os
-import enum
-
+from flask_jwt_extended import get_jwt_identity
+from datetime import datetime
 from app import db_relational as db, login
+
+import enum
 
 
 class UserRoles(enum.Enum):
@@ -34,16 +32,16 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(40), index=True)
     email = db.Column(db.String(120), index=True, unique=True)
     date_of_birth = db.Column(db.Date, index=True)
-    date_registered = db.Column(db.DateTime, index=True,
-                                default=datetime.utcnow().replace(microsecond=0))
+    date_registered = db.Column(
+        db.DateTime, index=True,
+        default=datetime.utcnow().replace(microsecond=0)
+    )
     last_login = db.Column(db.DateTime, index=True)
     password_hash = db.Column(db.String(128))
-    token = db.Column(db.String(32), index=True, unique=True)
-    token_expiration = db.Column(db.DateTime)
-    password_reset_token = db.Column(db.String(32), index=True, unique=True)
-    password_reset_expiration = db.Column(db.DateTime)
     user_role = db.Column(
-        db.Enum(UserRoles), default=UserRoles.USER, nullable=False)
+        db.Enum(UserRoles),
+        default=UserRoles.USER, nullable=False
+    )
 
     def __repr__(self):
         """Return print information about the user in a
@@ -87,32 +85,6 @@ class User(UserMixin, db.Model):
         if new_user and 'password' in data:
             self.set_password(data['password'])
 
-    def get_token(self, expires_in=3600):
-        """Sets the last login and returns a random string token to the user.
-
-        :param expires_in: Time until the token expires in seconds
-        """
-        now = datetime.utcnow()
-        self.last_login = now.replace(microsecond=0)
-        if self.token and self.token_expiration > now + timedelta(seconds=60):
-            return self.token
-        self.token = base64.b64encode(os.urandom(24)).decode('utf-8')
-        self.token_expiration = now + timedelta(seconds=expires_in)
-        db.session.add(self)
-        return self.token
-
-    def revoke_token(self):
-        """Make a token assigned to user invalid."""
-        self.token_expiration = datetime.utcnow() - timedelta(seconds=1)
-
-    @staticmethod
-    def check_token(token):
-        """Finds the user of the given token."""
-        user = User.query.filter_by(token=token).first()
-        if user is None or user.token_expiration < datetime.utcnow():
-            return None
-        return user
-
     def has_user_role(self, user_role):
         """Checks if the user has the permissions level of at least the
         given role. See the UserRoles class.
@@ -123,22 +95,6 @@ class User(UserMixin, db.Model):
         """Checks if the user is an admin."""
         return self.user_role == UserRoles.ADMIN
 
-    def get_reset_password_token(self, expires_in=600):
-        """Sets the password reset token field for reseting the users password.
-
-        :param expires_in: How long in seconds until the token expires,
-            default is 600.
-        :type expires_in: int
-
-        :return: The password reset token.
-        """
-        now = datetime.utcnow()
-        self.password_reset_token = base64.b64encode(
-            os.urandom(6)).decode('utf-8')
-        self.password_reset_expiration = now + timedelta(seconds=expires_in)
-        db.session.add(self)
-        return self.password_reset_token
-
     @staticmethod
     def verify_reset_password_token(token):
         """Verifies the given password reset token, returning the user
@@ -146,11 +102,12 @@ class User(UserMixin, db.Model):
 
         :param token: Password reset token.
         """
-        user = User.query.filter_by(password_reset_token=token).first()
-        if user is None or user.password_reset_expiration < datetime.utcnow():
-            return None
-        else:
+        user = User.query.filter_by(user_id=token.user_id).first()
+
+        if token.action is "password_reset" and user:
             return user
+        else:
+            return None
 
 
 @login.user_loader
