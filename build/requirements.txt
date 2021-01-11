@@ -26,3 +26,5 @@ imutils==0.5.3
 scikit-image==0.16.2
 colour-science==0.3.15
 tensorflow==1.14
+flask-jwt-extended==3.25.0
+pyopenssl==20.0.1
