@@ -24,7 +24,6 @@ login = LoginManager()
 login.login_view = 'auth.login'
 bootstrap = Bootstrap()
 mail = Mail()
-admin = Admin(name='Vulture', template_mode='bootstrap3')
 celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
 
 
@@ -37,6 +36,8 @@ def create_app(config_class=Config):
     # Initiate Flask app and config
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    admin = Admin(name='Vulture', template_mode='bootstrap3')
 
     # Configure logging
     if app.config['LOG_TO_STDOUT']:

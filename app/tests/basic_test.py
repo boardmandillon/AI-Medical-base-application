@@ -1,93 +1,97 @@
+import os
 import unittest
-from flask import Flask
-from flask_testing import TestCase, LiveServerTestCase
 
-from app import create_app
-from config import Config
-
-
-# class TestConfig(Config):
-#     TESTING = True
+from app import create_app, db_relational as db
+from setup import setUp
+from config import Config, basedir
 
 
-class BasicTest(TestCase):
+class TestConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'test.db')
+
+class BasicTest(unittest.TestCase):
     """Class for basic test cases."""
-
-    def create_app(self):
-        # self.app = create_app(TestConfig)
-        # return self.app
-        app = Flask(__name__)
-        app.config['TESTING'] = True
-
-        #liveservertestcase
-        return app
-
     def setUp(self):
-        """Executed before starting a test."""
+        "set up test fixtures"
+        app = create_app(TestConfig)
+
+        self.app = app
         self.app_context = self.app.app_context()
         self.app_context.push()
 
-        # TODO: #11 Add database functionality to web app
-        # db.create_all()
+        with self.app_context:
+            db.create_all()
 
     def tearDown(self):
         """Executed after each test."""
-        # TODO: #11 Add database functionality to web app
-        # db.session.remove()
-        # db.drop_all()
+        with self.app_context:
+            db.session.remove()
+            db.drop_all()
 
-        self.app_context.pop()
+    # Unit test cases
+    ############################################################################
+    def test_valid_user_registration(self):
+        response = self.register(
+            'user@email.com',
+            'password',
+            'Test McTest'
+        )
+        self.assertEqual(response.status_code, 201)
 
-   
+    def test_duplicate_user_registration(self):
+        setUp.setUpTestUser()
 
-    ####################
-    # Unit test cases...
-    ####################
+        response = self.register(
+            'user@email.com',
+            'password',
+            'Test McTest'
+        )
 
-    def test_main_page_returns_fail(self):
-        response = self.client.get('/')
+        self.assertEqual(response.status_code, 400)
 
-        # self.assert200(response, message="Status code not 200")
-        self.assert404(response, message="Status code not 200")
+    def test_valid_user_login(self):
+        setUp.setUpTestUser()
 
-    def test_admin_page_returns_success(self):
-        # response = self.client.get('/admin', follow_redirects=True)
-        # self.assertEqual(response.status_code, 200)
+        response = self.login(
+            'user@email.com',
+            'password'
+        )
 
-        response = self.app.test_client().get('/admin')
         self.assertEqual(response.status_code, 200)
 
+    def test_valid_user_logout(self):
+        setUp.setUpTestUser()
+        self.login('user@email.com', 'password')
 
+        response = self.logout()
 
+        self.assertEqual(response.status_code, 200)
+    ############################################################################
 
-
-    ########################
-    #### helper methods ####
-    ########################
-    
+    # helper methods
+    ############################################################################
+    def register(self, email, password, name):
+        return self.app.test_client().post(
+            '/api/users',
+            data=dict(email=email, password=password, name=name)
+        )
 
     def login(self, email, password):
-        return self.app.test_client().post(
-            '/login',
-            data=dict(email=email, password=password),
-            follow_redirects=True
+        return self.app.test_client().get(
+            'auth/login',
+            data=dict(email=email, password=password)
         )
-    
+
     def logout(self):
         return self.app.test_client().get(
-            '/logout',
-            follow_redirects=True)
+            'auth/logout',
+            follow_redirects=True
+        )
+    ############################################################################
 
-    def test_valid_user_registration(self):
-        response = self.login('patkennedy79@gmail.com', 'FlaskIsAwesome')
-        self.assertEqual(response.status_code, 200)
-    
-    def test_valid_logout(self):
-        response = self.logout()
-        self.assertEqual(response.status_code, 200)
-
-
-    ## dummy tests
+    # dummy tests
+    ############################################################################
     def test_isupper(self):
         self.assertTrue('FOO'.isupper())
     
@@ -95,8 +99,8 @@ class BasicTest(TestCase):
         self.assertTrue('foo'.islower())
 
     def test_upper(self):
-        self.assertEqual('foo'.upper(), 'FOO') 
-
+        self.assertEqual('foo'.upper(), 'FOO')
+    ############################################################################
 
 if __name__ == "__main__":
     unittest.main()
