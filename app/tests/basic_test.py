@@ -37,6 +37,7 @@ class BasicTest(unittest.TestCase):
             'password',
             'Test McTest'
         )
+
         self.assertEqual(response.status_code, 201)
 
     def test_duplicate_user_registration(self):
@@ -52,11 +53,7 @@ class BasicTest(unittest.TestCase):
 
     def test_valid_user_login(self):
         setUp.setUpTestUser()
-
-        response = self.login(
-            'user@email.com',
-            'password'
-        )
+        response = self.login('user@email.com', 'password')
 
         self.assertEqual(response.status_code, 200)
 
@@ -65,6 +62,24 @@ class BasicTest(unittest.TestCase):
         self.login('user@email.com', 'password')
 
         response = self.logout()
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_valid_token_Authentication(self):
+        setUp.setUpTestUser()
+        response = self.authenticate_token()
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_valid_token_Refresh(self):
+        setUp.setUpTestUser()
+        authentication_token = self.authenticate_token()
+        print(authentication_token.data)
+        print(authentication_token.data)
+
+        data = authentication_token.data.to_dict()
+
+        response = self.refresh_token(authentication_token)
 
         self.assertEqual(response.status_code, 200)
     ############################################################################
@@ -87,6 +102,28 @@ class BasicTest(unittest.TestCase):
         return self.app.test_client().get(
             'auth/logout',
             follow_redirects=True
+        )
+
+    def verify_password(self, email, password):
+        return self.app.test_client().get(
+            'auth/login',
+            data=dict(email=email, password=password)
+        )
+
+    def authenticate_token(self):
+        return self.app.test_client().post(
+            '/api/authenticate',
+            headers = {
+                'Authorization': 'Basic dXNlckBlbWFpbC5jb206cGFzc3dvcmQ=' # base64 encoded (user@email.com:password)
+            }
+        )
+
+    def refresh_token(self):
+        return self.app.test_client().post(
+            '/api/authenticate',
+            headers = {
+                'Authorization': 'Basic dXNlckBlbWFpbC5jb206cGFzc3dvcmQ=' # base64 encoded (user@email.com:password)
+            }
         )
     ############################################################################
 
