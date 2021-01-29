@@ -47,6 +47,16 @@ class BasicTest(unittest.TestCase):
         self.assertEqual(response_data['id'], 1)
         self.assertEqual(response_data['name'], 'Test McTest')
 
+    def test_create_user_addsUserToDB_whenValid(self):
+        self.register(
+            'user@email.com',
+            'password',
+            'Test McTest'
+        )
+
+        self.assertEqual(User.query.get(1).name, 'Test McTest')
+        self.assertEqual(User.query.get(1).email, 'user@email.com')
+
     def test_create_user_returns400AndErrorMessage_whenDuplicateEmailRegisters(self):
         setUp.setUpTestUser()
 
@@ -93,12 +103,32 @@ class BasicTest(unittest.TestCase):
             self.assertEqual(response.status_code, 400)
             self.assertEqual(response_message,"Must include 'email', 'password', 'name'")
 
+
+
+
     def test_password_reset_returns204_whenValidRequest(self):
         response = self.reset_password_request(
             'user@email.com'
         )
 
         self.assertEqual(response.status_code, 204)
+
+    @patch('app.api.users.send_password_reset_email')
+    def test_password_reset_callsSendEmailToCorrectUser_whenValidRequest(self, test_patch):
+        setUp.setUpTestUser()
+        self.reset_password_request(
+            'user@email.com'
+        )
+
+        test_patch.assert_called_with(User.query.get(1))
+    
+    @patch('app.api.users.send_password_reset_email')
+    def test_password_reset_doesNotSendEmail_whenUserDoesNotExist(self, test_patch):
+        self.reset_password_request(
+            'user@email.com'
+        )
+
+        assert not test_patch.called, 'send_password_reset_email was called and should not have been'
 
     def test_password_reset_returns400AndErrorMessage_whenMissingEmail(self):
         response = self.reset_password_request(
@@ -109,23 +139,43 @@ class BasicTest(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response_message,"Must include 'email' field")
 
-    # @patch('app.models.user.User.verify_reset_password_token', return_value='Test McTest')
-    # @patch('app.api.users.User.verify_reset_password_token', return_value='Test McTest')
+
+
+
+
     @patch('app.api.users.User.verify_reset_password_token')
     def test_password_returns204_whenValidNewPasswordRequest(self, test_patch):
-        # setUp.setUpTestUser()
-        test_patch.return_value('Test McTest')
+        setUp.setUpTestUser()
+        test_patch.return_value= User.query.get(1)
         
         response = self.set_new_password(
             'token',
             'newPassword'
         )
 
-        # response_message = json.loads(response.get_data().decode("utf-8"))['message']
-        # print("REPSONSE MESSAGE: ",response_message)
-
         self.assertEqual(response.status_code, 204)
 
+    @patch('app.api.users.User.verify_reset_password_token')
+    @patch('app.api.users.User.set_password')
+    def test_password_callsSetPassword_whenValidNewPasswordRequest(self, set_patch, reset_patch):
+        setUp.setUpTestUser()
+        reset_patch.return_value= User.query.get(1)
+        
+        self.set_new_password(
+            'token',
+            'newPassword'
+        )
+
+        set_patch.assert_called_with('newPassword')
+
+    @patch('app.api.users.User.set_password')
+    def test_password_doesNotCallsSetPassword_whenUserDoesNotExist(self, set_patch):
+        self.set_new_password(
+            'token',
+            'newPassword'
+        )
+
+        assert not set_patch.called, 'set_password was called and should not have been'
 
     def test_password_returns403AndErrorMessage_wheninvalidPasswordResetToken(self):
         response = self.set_new_password(
@@ -136,6 +186,32 @@ class BasicTest(unittest.TestCase):
         response_message = json.loads(response.get_data().decode("utf-8"))['message']
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response_message,"Invalid password reset token")
+
+    @patch('app.api.users.User.verify_reset_password_token')
+    def test_password_returns400AndErrorMessage_whenMissingToken(self, test_patch):
+        setUp.setUpTestUser()
+        test_patch.return_value= User.query.get(1)
+        
+        response = self.set_new_password(
+            None,
+            'newPassword'
+        )
+
+        self.assertEqual(response.status_code, 400)
+    
+    @patch('app.api.users.User.verify_reset_password_token')
+    def test_password_returns400AndErrorMessage_whenMissingEmail(self, test_patch):
+        setUp.setUpTestUser()
+        test_patch.return_value= User.query.get(1)
+        
+        response = self.set_new_password(
+            'token',
+            None
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+
 
 
     def test_valid_user_login(self):
@@ -188,18 +264,6 @@ class BasicTest(unittest.TestCase):
             'auth/logout',
             follow_redirects=True
         )
-    ############################################################################
-
-    # dummy tests
-    ############################################################################
-    def test_isupper(self):
-        self.assertTrue('FOO'.isupper())
-    
-    def test_islower(self):
-        self.assertTrue('foo'.islower())
-
-    def test_upper(self):
-        self.assertEqual('foo'.upper(), 'FOO')
     ############################################################################
 
 if __name__ == "__main__":
