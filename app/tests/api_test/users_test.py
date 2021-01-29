@@ -3,9 +3,9 @@ import unittest
 import json
 
 from app import create_app, db_relational as db
-from setup import setUp
+from app.tests.setup import setUp
 from config import Config, basedir
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from app.models.user import User
 
 class TestConfig(Config):
@@ -231,6 +231,10 @@ class BasicTest(unittest.TestCase):
         response = self.logout()
 
         self.assertEqual(response.status_code, 200)
+
+
+
+
     ############################################################################
 
     # helper methods
@@ -265,6 +269,10 @@ class BasicTest(unittest.TestCase):
             follow_redirects=True
         )
     ############################################################################
+
+
+
+
 
 if __name__ == "__main__":
     unittest.main()
