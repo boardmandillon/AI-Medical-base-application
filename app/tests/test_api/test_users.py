@@ -12,7 +12,7 @@ class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'test.db')
 
-class BasicTest(unittest.TestCase):
+class UsersTest(unittest.TestCase):
     """Class for basic test cases."""
     
     def setUp(self):

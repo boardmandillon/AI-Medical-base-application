@@ -6,7 +6,7 @@ from app import db_relational as db
 
 from app.api import bp
 from app.api.errors import bad_request, forbidden
-from app.auth.email import send_password_reset_email
+from app.auth.sendemail import send_password_reset_email
 
 
 @bp.route('/users', methods=['POST'])
