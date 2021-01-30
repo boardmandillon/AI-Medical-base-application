@@ -197,7 +197,9 @@ class UsersTest(unittest.TestCase):
             'newPassword'
         )
 
+        response_message = json.loads(response.get_data().decode("utf-8"))['message']
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(response_message,"Must include 'token' and 'new_password' fields")
     
     @patch('app.api.users.User.verify_reset_password_token')
     def test_password_returns400AndErrorMessage_whenMissingEmail(self, test_patch):
@@ -209,30 +211,9 @@ class UsersTest(unittest.TestCase):
             None
         )
 
+        response_message = json.loads(response.get_data().decode("utf-8"))['message']
         self.assertEqual(response.status_code, 400)
-
-
-
-
-    def test_valid_user_login(self):
-        setUp.setUpTestUser()
-
-        response = self.login(
-            'user@email.com',
-            'password'
-        )
-
-        self.assertEqual(response.status_code, 200)
-
-    def test_valid_user_logout(self):
-        setUp.setUpTestUser()
-        self.login('user@email.com', 'password')
-
-        response = self.logout()
-
-        self.assertEqual(response.status_code, 200)
-
-
+        self.assertEqual(response_message,"Must include 'token' and 'new_password' fields")
 
 
     ############################################################################
