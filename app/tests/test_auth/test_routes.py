@@ -1,17 +1,20 @@
 import os
 import unittest
+import json
 
 from app import create_app, db_relational as db
-from setup import setUp
+from app.tests.setup import setUp
 from config import Config, basedir
-
+from unittest.mock import patch
+from app.models.user import User
 
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'test.db')
 
-class BasicTest(unittest.TestCase):
+class RoutesTest(unittest.TestCase):
     """Class for basic test cases."""
+    
     def setUp(self):
         "set up test fixtures"
         app = create_app(TestConfig)
@@ -31,25 +34,7 @@ class BasicTest(unittest.TestCase):
 
     # Unit test cases
     ############################################################################
-    def test_valid_user_registration(self):
-        response = self.register(
-            'user@email.com',
-            'password',
-            'Test McTest'
-        )
-        self.assertEqual(response.status_code, 201)
-
-    def test_duplicate_user_registration(self):
-        setUp.setUpTestUser()
-
-        response = self.register(
-            'user@email.com',
-            'password',
-            'Test McTest'
-        )
-
-        self.assertEqual(response.status_code, 400)
-
+ 
     def test_valid_user_login(self):
         setUp.setUpTestUser()
 
@@ -67,15 +52,12 @@ class BasicTest(unittest.TestCase):
         response = self.logout()
 
         self.assertEqual(response.status_code, 200)
+
+
     ############################################################################
 
     # helper methods
     ############################################################################
-    def register(self, email, password, name):
-        return self.app.test_client().post(
-            '/api/users',
-            data=dict(email=email, password=password, name=name)
-        )
 
     def login(self, email, password):
         return self.app.test_client().get(
@@ -90,17 +72,9 @@ class BasicTest(unittest.TestCase):
         )
     ############################################################################
 
-    # dummy tests
-    ############################################################################
-    def test_isupper(self):
-        self.assertTrue('FOO'.isupper())
-    
-    def test_islower(self):
-        self.assertTrue('foo'.islower())
 
-    def test_upper(self):
-        self.assertEqual('foo'.upper(), 'FOO')
-    ############################################################################
+
+
 
 if __name__ == "__main__":
     unittest.main()
