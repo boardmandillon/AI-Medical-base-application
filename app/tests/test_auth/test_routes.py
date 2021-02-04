@@ -14,7 +14,7 @@ class TestConfig(Config):
 
 class RoutesTest(unittest.TestCase):
     """Class for basic test cases."""
-    
+
     def setUp(self):
         "set up test fixtures"
         app = create_app(TestConfig)
@@ -34,14 +34,10 @@ class RoutesTest(unittest.TestCase):
 
     # Unit test cases
     ############################################################################
- 
+
     def test_valid_user_login(self):
         setUp.setUpTestUser()
-
-        response = self.login(
-            'user@email.com',
-            'password'
-        )
+        response = self.login('user@email.com', 'password')
 
         self.assertEqual(response.status_code, 200)
 
@@ -52,7 +48,6 @@ class RoutesTest(unittest.TestCase):
         response = self.logout()
 
         self.assertEqual(response.status_code, 200)
-
 
     ############################################################################
 
@@ -70,6 +65,28 @@ class RoutesTest(unittest.TestCase):
             'auth/logout',
             follow_redirects=True
         )
+
+    def verify_password(self, email, password):
+        return self.app.test_client().get(
+            'auth/login',
+            data=dict(email=email, password=password)
+        )
+
+    def authenticate_token(self):
+        return self.app.test_client().post(
+            '/api/authenticate',
+            headers = {
+                'Authorization': 'Basic dXNlckBlbWFpbC5jb206cGFzc3dvcmQ=' # base64 encoded (user@email.com:password)
+            }
+        )
+
+    # def refresh_token(self):
+    #     return self.app.test_client().post(
+    #         '/api/authenticate',
+    #         headers = {
+    #             'Authorization': 'Basic dXNlckBlbWFpbC5jb206cGFzc3dvcmQ=' # base64 encoded (user@email.com:password)
+    #         }
+    #     )
     ############################################################################
 
 

@@ -4,9 +4,9 @@ import binascii
 from io import BytesIO
 from PIL import Image
 from flask import request, g, jsonify
+from flask_jwt_extended import (jwt_required, get_jwt_identity)
 
 from app.api import bp
-from app.api.auth import token_auth
 from app.api.errors import bad_request
 from app.api.decorators import user_role_required
 from app.models.user import UserRoles
@@ -15,7 +15,7 @@ from app.projects.skin_cancer_analysis.skin_cancer_model import skinCancerModel
 
 
 @bp.route('/skin_cancer_analysis', methods=['POST'])
-@token_auth.login_required
+@jwt_required
 def skin_cancer_create_diagnosis():
     """Extracts cancer image from JSON data in the request.
 
@@ -52,7 +52,9 @@ def skin_cancer_create_diagnosis():
     except IOError:
         return bad_request('image file is not valid')
 
-    diagnosis = skinCancerModel(user_id=g.current_user.id, content_type=content_type,
+    current_user = get_jwt_identity()
+
+    diagnosis = skinCancerModel(user_id=current_user.id, content_type=content_type,
                                 **data, diagnosis_photo=diagnosis_photo)
     diagnosis.save()
 
@@ -60,7 +62,7 @@ def skin_cancer_create_diagnosis():
 
 
 @bp.route('/skin_cancer_analysis', methods=['GET'])
-@token_auth.login_required
+@jwt_required
 def skin_cancer_get_diagnosis():
     """Called straight after skin_cancer_create_diagnosis().
     The predictor class is called and a prediction is output
@@ -70,9 +72,11 @@ def skin_cancer_get_diagnosis():
     prediction and image are returned.
 
     """
+    current_user = get_jwt_identity()
+
     try:
         prediction = predictImage()
-        pred = skinCancerModel(user_id=g.current_user.id, t_diagnosis=prediction)
+        pred = skinCancerModel(user_id=current_user.id, t_diagnosis=prediction)
         pred.save()
     except IOError:
         return bad_request('image file is not valid')
@@ -88,23 +92,25 @@ def skin_cancer_get_diagnosis():
 
 
 @bp.route('/records')
-@token_auth.login_required
+@jwt_required
 def getRecords():
     """Retrieves all records relating to the user currently logged in."""
-    return jsonify(skinCancerModel.objects().filter(user_id=g.current_user.id))
+    current_user = get_jwt_identity()
+    return jsonify(skinCancerModel.objects().filter(user_id=current_user.id))
 
 
 @bp.route('/skin_cancer_analysis/<doc_id>', methods=['DELETE'])
-@token_auth.login_required
+@jwt_required
 def skin_cancer_diagnosis_delete_from_id(doc_id):
     """Deletes record corresponding to the given ID."""
+    current_user = get_jwt_identity()
     skinCancerModel.objects.get_or_404(
-        id=doc_id, user_id=g.current_user.id).delete()
+        id=doc_id, user_id=current_user.id).delete()
     return jsonify({"success": True})
 
 
 @bp.route('/skin_cancer_analysis/<doc_id>', methods=['PATCH'])
-@token_auth.login_required
+@jwt_required
 @user_role_required(UserRoles.USER)
 def skin_cancer_diagnosis_update(doc_id):
     """Updates fields of the document from the JSON data in the request."""
@@ -113,15 +119,20 @@ def skin_cancer_diagnosis_update(doc_id):
     else:
         data = request.form.to_dict() or {}
 
+    current_user = get_jwt_identity()
+
     model = skinCancerModel.objects.get_or_404(
-        id=doc_id, user_id=g.current_user.id)
+        id=doc_id,
+        user_id=current_user.id
+    )
+
     model.save(data)
 
     return jsonify(model)
 
 
 @bp.route('/skin_cancer_analysis/labels')
-@token_auth.login_required
+@jwt_required
 def skin_cancer_analysis_labels_get():
     """Retrieves the possible labels which the data might be given."""
     return jsonify(skinCancerModel.possible_labels)

@@ -14,7 +14,7 @@ class TestConfig(Config):
 
 class AuthTest(unittest.TestCase):
     """Class for basic test cases."""
-    
+
     def setUp(self):
         "set up test fixtures"
         app = create_app(TestConfig)
@@ -52,33 +52,6 @@ class AuthTest(unittest.TestCase):
 
         response = auth.verify_password('user@email.com', 'incorrectPassword')
 
-        self.assertEqual(response, False)
-
-
-
-
-    def test_verify_token_returnsTrue_whenValidUserToken(self):
-        setUp.setUpTestUser()
-        token = User.query.get(1).get_token()
-
-        response = auth.verify_token(token)
-
-        self.assertEqual(response, True)
-
-    def test_verify_token_returnsFalse_whenInvalidUserToken(self):
-        setUp.setUpTestUser()
-        User.query.get(1).get_token()
-
-        response = auth.verify_token('invalidToken')
-
-        self.assertEqual(response, False)
-
-    def test_verify_token_returnsFalse_whenInvalidUserToken(self):
-        setUp.setUpTestUser()
-        User.query.get(1).get_token()
-        
-        response = auth.verify_token(None)
-        
         self.assertEqual(response, False)
 
 

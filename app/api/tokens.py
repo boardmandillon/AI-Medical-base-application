@@ -1,29 +1,37 @@
 from flask import jsonify, g
+from flask_jwt_extended import (
+    jwt_refresh_token_required,
+    create_access_token,
+    create_refresh_token,
+    get_jwt_identity
+)
 
 from app import db_relational as db
 from app.api import bp
 from app.api.auth import basic_auth
-from app.api.auth import token_auth
 
-
-@bp.route('/tokens', methods=['POST'])
+@bp.route('/authenticate', methods=['GET'])
 @basic_auth.login_required
 def get_token():
     """Generates a token for a user and writes the token and expiration
     to the database
     """
-    token = g.current_user.get_token()
-    db.session.commit()
     user_id = g.current_user.id
     email = g.current_user.email
-    return jsonify({'token': token,"user" :{ "id" : user_id, "email" : email}})
+
+    user = {"user" :{ "id" : user_id, "email" : email}}
+    ret = {
+        "access_token": create_access_token(identity=user),
+        "refresh_token": create_refresh_token(identity=user)
+    }
+
+    return jsonify(ret), 200
 
 
-@bp.route('tokens', methods=['DELETE'])
-@token_auth.login_required
-def revoke_token():
-    """Client can invalidate a token by sending a delete request
-    """
-    g.current_user.revoke_token()
-    db.session.commit()
-    return '', 204
+@bp.route('/refresh', methods=['GET'])
+@jwt_refresh_token_required
+def refresh():
+    user = get_jwt_identity()
+    ret = {"access_token": create_access_token(identity=user)}
+
+    return jsonify(ret), 200
