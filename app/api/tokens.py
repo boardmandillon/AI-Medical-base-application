@@ -10,7 +10,7 @@ from app import db_relational as db
 from app.api import bp
 from app.api.auth import basic_auth
 
-@bp.route('/authenticate', methods=['GET'])
+@bp.route('/authenticate', methods=['POST'])
 @basic_auth.login_required
 def get_token():
     """Generates a token for a user and writes the token and expiration
@@ -28,7 +28,7 @@ def get_token():
     return jsonify(ret), 200
 
 
-@bp.route('/refresh', methods=['GET'])
+@bp.route('/refresh', methods=['POST'])
 @jwt_refresh_token_required
 def refresh():
     user = get_jwt_identity()
