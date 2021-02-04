@@ -70,6 +70,7 @@ def password():
         data = request.form.to_dict() or {}
 
     identity = get_jwt_identity()
+    
     new_password = data.get('new_password')
     if not new_password:
         return bad_request("Must include 'token' and 'new_password' fields")

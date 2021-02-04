@@ -14,7 +14,7 @@ class TestConfig(Config):
 
 class RoutesTest(unittest.TestCase):
     """Class for basic test cases."""
-    
+
     def setUp(self):
         "set up test fixtures"
         app = create_app(TestConfig)
@@ -34,7 +34,7 @@ class RoutesTest(unittest.TestCase):
 
     # Unit test cases
     ############################################################################
- 
+
     def test_valid_user_login(self):
         setUp.setUpTestUser()
         response = self.login('user@email.com', 'password')

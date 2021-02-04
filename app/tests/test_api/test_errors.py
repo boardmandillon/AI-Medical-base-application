@@ -15,7 +15,6 @@ class TestConfig(Config):
 
 class ErrorsTest(unittest.TestCase):
     """Class for basic test cases."""
-    
     def setUp(self):
         "set up test fixtures"
         app = create_app(TestConfig)
@@ -43,13 +42,13 @@ class ErrorsTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.status, "200 OK")
         self.assertEqual(response_message, "test error response message")
-    
+
     def test_error_response_returnsCorrectStatusAndMessage_whenNoMessage(self):
         response = errors.error_response(200)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.status, "200 OK")
-    
+
     def test_error_response_returnsCodeAndUnknown_whenUnknownStatusCodeNoMessage(self):
         response = errors.error_response(2021)
 
@@ -58,7 +57,7 @@ class ErrorsTest(unittest.TestCase):
         self.assertEqual(response.status_code, 2021)
         self.assertEqual(response.status, "2021 UNKNOWN")
         self.assertEqual(response_error_message, "Unknown error")
-    
+
     def test_error_response_returnsCodeAndMessageAndUnknown_whenUnknownStatusCodeAndMessage(self):
         response = errors.error_response(2021, "2021 test message")
 
@@ -79,13 +78,13 @@ class ErrorsTest(unittest.TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.status, "403 FORBIDDEN")
         self.assertEqual(response_message, "test forbidden message")
-    
+
     def test_forbidden_returns403_whenNoMessage(self):
         response = errors.forbidden(None)
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.status, "403 FORBIDDEN")
-        
+
 
 
 
@@ -97,13 +96,13 @@ class ErrorsTest(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.status, "401 UNAUTHORIZED")
         self.assertEqual(response_message, "test unauthorized message")
-    
+
     def test_unauthorized_returns401_whenNoMessage(self):
         response = errors.unauthorized()
 
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.status, "401 UNAUTHORIZED")
-    
+
 
 
 
@@ -114,7 +113,7 @@ class ErrorsTest(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.status, "400 BAD REQUEST")
         self.assertEqual(response_message, "test bad request message")
-    
+
     def test_bad_request_returns403_whenNoMessage(self):
         response = errors.bad_request(None)
 
