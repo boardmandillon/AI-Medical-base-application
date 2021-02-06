@@ -6,7 +6,7 @@ from app import create_app, db_relational as db
 from app.tests.setup import setUp
 from config import Config, basedir
 from unittest.mock import patch
-from app.models.user import User, UserRoles
+from app.models.user import User
 from flask import url_for
 
 class TestConfig(Config):
@@ -74,12 +74,10 @@ class RoutesTest(unittest.TestCase):
     
 
     def test_302_redirectsToLogin_whenIncorrectPassword(self):
-        setUp.setUpTestUser()
-        user = User.query.get(1)
-        user.user_role = UserRoles.ADMIN
+        setUp.setUpTestAdmin()
         
         response = self.login_post(
-            'user@email.com',
+            'admin@email.com',
             'incorrectPassword'
         )
         
@@ -87,52 +85,44 @@ class RoutesTest(unittest.TestCase):
         self.assertEqual(response.location, url_for('auth.login', _external=True))
 
     def test_302_redirectsToLogin_whenUserNotAdmin(self):
-        setUp.setUpTestUser()
-        user = User.query.get(1)
-        user.user_role = UserRoles.EXPERT
+        setUp.setUpTestExpert()
         
         response = self.login_post(
-            'user@email.com',
-            'password'
+            'expert@email.com',
+            'expertPassword'
         )
         
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.location, url_for('auth.login', _external=True))
 
     def test_302_redirectsToAdminIndex_whenValidAdmin_andNoPageSet(self):
-        setUp.setUpTestUser()
-        user = User.query.get(1)
-        user.user_role = UserRoles.ADMIN
+        setUp.setUpTestAdmin()
         
         response = self.login_post(
-            'user@email.com',
-            'password'   
+            'admin@email.com',
+            'adminPassword'   
         )
         
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.location, url_for('admin.index', _external=True))
 
     def test_302_redirectsToNextPage_whenSafePageSet(self):
-        setUp.setUpTestUser()
-        user = User.query.get(1)
-        user.user_role = UserRoles.ADMIN
+        setUp.setUpTestAdmin()
         
         response = self.app.test_client().post(
             'auth/login?next=nextPage',
-            data=dict(email="user@email.com", password="password", remember_me=True, submit=True),
+            data=dict(email="admin@email.com", password="adminPassword", remember_me=True, submit=True),
         )
         
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.location, 'http://test.localdomain/auth/nextPage')
 
     def test_302_redirectsToAdmin_whenMaliciousPageSet(self):
-        setUp.setUpTestUser()
-        user = User.query.get(1)
-        user.user_role = UserRoles.ADMIN
+        setUp.setUpTestAdmin()
         
         response = self.app.test_client().post(
             'auth/login?next=',
-            data=dict(email="user@email.com", password="password", remember_me=True, submit=True),
+            data=dict(email="admin@email.com", password="adminPassword", remember_me=True, submit=True),
         )
         
         self.assertEqual(response.status_code, 302)
