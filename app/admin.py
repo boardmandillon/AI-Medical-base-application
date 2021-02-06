@@ -30,12 +30,13 @@ class AdminModelView(ModelView):
 
 class UserModelView(AdminModelView):
     """Model view for the User model."""
-    column_exclude_list = [
-        'password_hash', 'token', 'token_expiration', 'password_reset_token']
+    column_exclude_list = ['password_hash']
     column_searchable_list = ['name', 'email']
     column_filters = ['user_role']
     form_excluded_columns = column_exclude_list + [
-        'password_reset_expiration', 'last_login', 'date_registered']
+        'last_login',
+        'date_registered'
+    ]
 
     def get_create_form(self):
         create_form = super().get_create_form()

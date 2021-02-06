@@ -15,7 +15,7 @@ class TestConfig(Config):
 
 class TokensTest(unittest.TestCase):
     """Class for basic test cases."""
-    
+
     def setUp(self):
         "set up test fixtures"
         app = create_app(TestConfig)
@@ -35,25 +35,40 @@ class TokensTest(unittest.TestCase):
 
     # Unit test cases
     ############################################################################
+    def test_get_token(self):
+        setUp.setUpTestUser()
+        response = self.get_token()
 
-    
-    # def test_get_token_returnsUserToken_whenValidUser(self):
-    #     setUp.setUpTestUser()
-    #     response = self.post_token()
-    #     print("response", response)
+        self.assertEqual(response.status_code, 200)
 
+    def test_refresh_token(self):
+        setUp.setUpTestUser()
+        authentication_token = json.loads(self.get_token().data)
+        refresh_token = authentication_token["refresh_token"]
+
+        response = self.refresh_token(refresh_token)
+
+        self.assertEqual(response.status_code, 200)
 
 
     # helper methods
     ############################################################################
-    # def post_token(self):
-    #     return self.app.test_client().post(
-    #         '/api/tokens'
-    #     )
-        
+    def get_token(self):
+        return self.app.test_client().get(
+            '/api/authenticate',
+            headers = {
+                'Authorization': 'Basic dXNlckBlbWFpbC5jb206cGFzc3dvcmQ=' # base64 encoded (user@email.com:password)
+            }
+        )
 
+    def refresh_token(self, refresh_token):
+        return self.app.test_client().get(
+            '/api/refresh',
+            headers = {
+                'Authorization': f'Bearer {refresh_token}'
+            }
+        )
 
-    ############################################################################
 
 
 

@@ -14,7 +14,6 @@ class TestConfig(Config):
 
 class UsersTest(unittest.TestCase):
     """Class for basic test cases."""
-    
     def setUp(self):
         "set up test fixtures"
         app = create_app(TestConfig)
@@ -104,8 +103,6 @@ class UsersTest(unittest.TestCase):
             self.assertEqual(response_message,"Must include 'email', 'password', 'name'")
 
 
-
-
     def test_password_reset_returns204_whenValidRequest(self):
         response = self.reset_password_request(
             'user@email.com'
@@ -121,7 +118,7 @@ class UsersTest(unittest.TestCase):
         )
 
         test_patch.assert_called_with(User.query.get(1))
-    
+
     @patch('app.api.users.send_password_reset_email')
     def test_password_reset_doesNotSendEmail_whenUserDoesNotExist(self, test_patch):
         self.reset_password_request(
@@ -140,84 +137,6 @@ class UsersTest(unittest.TestCase):
         self.assertEqual(response_message,"Must include 'email' field")
 
 
-
-
-
-    @patch('app.api.users.User.verify_reset_password_token')
-    def test_password_returns204_whenValidNewPasswordRequest(self, test_patch):
-        setUp.setUpTestUser()
-        test_patch.return_value= User.query.get(1)
-        
-        response = self.set_new_password(
-            'token',
-            'newPassword'
-        )
-
-        self.assertEqual(response.status_code, 204)
-
-    @patch('app.api.users.User.verify_reset_password_token')
-    @patch('app.api.users.User.set_password')
-    def test_password_callsSetPassword_whenValidNewPasswordRequest(self, set_patch, reset_patch):
-        setUp.setUpTestUser()
-        reset_patch.return_value= User.query.get(1)
-        
-        self.set_new_password(
-            'token',
-            'newPassword'
-        )
-
-        set_patch.assert_called_with('newPassword')
-
-    @patch('app.api.users.User.set_password')
-    def test_password_doesNotCallsSetPassword_whenUserDoesNotExist(self, set_patch):
-        self.set_new_password(
-            'token',
-            'newPassword'
-        )
-
-        assert not set_patch.called, 'set_password was called and should not have been'
-
-    def test_password_returns403AndErrorMessage_wheninvalidPasswordResetToken(self):
-        response = self.set_new_password(
-            'invalidToken',
-            'newPassword'
-        )
-
-        response_message = json.loads(response.get_data().decode("utf-8"))['message']
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response_message,"Invalid password reset token")
-
-    @patch('app.api.users.User.verify_reset_password_token')
-    def test_password_returns400AndErrorMessage_whenMissingToken(self, test_patch):
-        setUp.setUpTestUser()
-        test_patch.return_value= User.query.get(1)
-        
-        response = self.set_new_password(
-            None,
-            'newPassword'
-        )
-
-        response_message = json.loads(response.get_data().decode("utf-8"))['message']
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response_message,"Must include 'token' and 'new_password' fields")
-    
-    @patch('app.api.users.User.verify_reset_password_token')
-    def test_password_returns400AndErrorMessage_whenMissingEmail(self, test_patch):
-        setUp.setUpTestUser()
-        test_patch.return_value= User.query.get(1)
-        
-        response = self.set_new_password(
-            'token',
-            None
-        )
-
-        response_message = json.loads(response.get_data().decode("utf-8"))['message']
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response_message,"Must include 'token' and 'new_password' fields")
-
-
-    ############################################################################
-
     # helper methods
     ############################################################################
     def register(self, email, password, name):
@@ -231,7 +150,7 @@ class UsersTest(unittest.TestCase):
             '/api/users/password-reset',
             data=dict(email=email)
         )
-    
+
     def set_new_password(self, token, new_password):
         return self.app.test_client().put(
             '/api/users/password',
@@ -249,10 +168,6 @@ class UsersTest(unittest.TestCase):
             'auth/logout',
             follow_redirects=True
         )
-    ############################################################################
-
-
-
 
 
 if __name__ == "__main__":

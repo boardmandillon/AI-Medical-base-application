@@ -10,6 +10,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from flask_admin import Admin
 from flask_admin.menu import MenuLink
+from flask_jwt_extended import JWTManager
 
 import os
 from datetime import datetime
@@ -90,5 +91,9 @@ def create_app(config_class=Config):
     from app.models.user import User
     admin.add_view(UserModelView(User, db_relational.session, endpoint='user'))
     admin.add_link(MenuLink(name='Logout', url='/auth/logout'))
+
+    # Setup the Flask-JWT-Extended extension
+    app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
+    JWTManager(app)
 
     return app

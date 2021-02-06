@@ -17,7 +17,7 @@ class TestConfig(Config):
 
 class RoutesTest(unittest.TestCase):
     """Class for basic test cases."""
-    
+
     def setUp(self):
         "set up test fixtures"
         app = create_app(TestConfig)
@@ -161,8 +161,7 @@ class RoutesTest(unittest.TestCase):
         return self.app.test_client().get(
             'auth/logout'
         )
-
-    
+        
     ############################################################################
 
 

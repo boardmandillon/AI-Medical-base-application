@@ -1,6 +1,8 @@
 from flask import request
 from flask import jsonify
 
+from flask_jwt_extended import (fresh_jwt_required, get_jwt_identity)
+
 from app.models.user import User
 from app import db_relational as db
 
@@ -51,11 +53,11 @@ def password_reset():
     user = User.query.filter_by(email=email).first()
     if user:
         send_password_reset_email(user)
-        db.session.commit()
     return jsonify(), 204
 
 
 @bp.route('/users/password', methods=['PUT'])
+@fresh_jwt_required
 def password():
     """Changes the password to the given new password for the user
     corresponding to the given password reset token.
@@ -67,13 +69,13 @@ def password():
     else:
         data = request.form.to_dict() or {}
 
-    token = data.get('token')
+    identity = get_jwt_identity()
+    
     new_password = data.get('new_password')
-    if not token or not new_password:
-        return bad_request(
-            "Must include 'token' and 'new_password' fields")
+    if not new_password:
+        return bad_request("Must include 'token' and 'new_password' fields")
 
-    user = User.verify_reset_password_token(token)
+    user = User.verify_reset_password_token(identity)
     if user:
         user.set_password(new_password)
         db.session.commit()

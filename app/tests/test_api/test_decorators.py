@@ -16,7 +16,6 @@ class TestConfig(Config):
 
 class RoleDecoratorsTest(unittest.TestCase):
     """Class for basic test cases."""
-    
     def setUp(self):
         "set up test fixtures"
         app = create_app(TestConfig)
@@ -36,7 +35,7 @@ class RoleDecoratorsTest(unittest.TestCase):
 
     # Unit test cases
     ############################################################################
-    # USER = 1    
+    # USER = 1
     # EXPERT = 2
     # ADMIN = 4
 
@@ -60,14 +59,14 @@ class RoleDecoratorsTest(unittest.TestCase):
 
         self.assertEqual(response, True)
 
-    
+
     def test_user_role_required_returns403Forbidden_whenUserHasWrongRole(self):
         #default user role is USER, which has less privilege than expert and admin
         setUp.setUpTestUser()
         g.current_user = User.query.get(1)
 
         response = self.does_function_run()
-        
+
         response_message = json.loads(response.get_data().decode("utf-8"))['message']
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response_message,"Insufficient permissions")

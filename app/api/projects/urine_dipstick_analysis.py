@@ -1,7 +1,7 @@
 from flask import request, g, jsonify
+from flask_jwt_extended import (jwt_required, get_jwt_identity)
 
 from app.api import bp
-from app.api.auth import token_auth
 from app.projects.urine_dipstick_analysis.urine_dipstick_model import \
     UrineDipstickModel
 from app.projects.urine_dipstick_analysis.urine_dipstick_image_pre_processing import \
@@ -17,7 +17,7 @@ import bson
 
 
 @bp.route('/urine_dipstick_analysis/', methods=['POST'])
-@token_auth.login_required
+@jwt_required
 def upload_urine_analysis_image():
     """Extracts urine dipstick image from JSON data in the request.
 
@@ -45,7 +45,9 @@ def upload_urine_analysis_image():
     except IOError:
         return bad_request('image file is not valid')
 
-    diagnosis = UrineDipstickModel(user_id=g.current_user.id, content_type=content_type,
+    current_user = get_jwt_identity()
+
+    diagnosis = UrineDipstickModel(user_id=current_user.id, content_type=content_type,
                                    **data, diagnosis_photo=diagnosis_photo)
     diagnosis.save()
 
@@ -53,7 +55,7 @@ def upload_urine_analysis_image():
 
 
 @bp.route('/urine_dipstick_analysis/', methods=['GET'])
-@token_auth.login_required
+@jwt_required
 def get_urine_analysis():
     """Retrieves analysis image corresponding to a given document object ID
     passed as a URL parameter.
@@ -61,18 +63,19 @@ def get_urine_analysis():
     For example <base URL>/urine_dipstick_analysis_images?id=<object ID here>
     """
     data = request.args.to_dict()
+    current_user = get_jwt_identity()
 
     if not data.get('id'):
         return bad_request('must include image file id')
     object_id = data.get('id')
 
     if not UrineDipstickModel.objects.get(
-            user_id=g.current_user.id,
+            user_id=current_user.id,
             diagnosis_photo=bson.objectid.ObjectId(object_id)):
         return bad_request('no file with the id: ' + data.get('id') + ' for this user')
 
     user_data = UrineDipstickModel.objects.get(
-        user_id=g.current_user.id, diagnosis_photo=bson.objectid.ObjectId(object_id))
+        user_id=current_user.id, diagnosis_photo=bson.objectid.ObjectId(object_id))
     diagnosis_photo = user_data.diagnosis_photo.read()
 
     results = image_pre_processing(diagnosis_photo)
