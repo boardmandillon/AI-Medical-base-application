@@ -54,7 +54,7 @@ class TokensTest(unittest.TestCase):
     # helper methods
     ############################################################################
     def get_token(self):
-        return self.app.test_client().get(
+        return self.app.test_client().post(
             '/api/authenticate',
             headers = {
                 'Authorization': 'Basic dXNlckBlbWFpbC5jb206cGFzc3dvcmQ=' # base64 encoded (user@email.com:password)
@@ -62,7 +62,7 @@ class TokensTest(unittest.TestCase):
         )
 
     def refresh_token(self, refresh_token):
-        return self.app.test_client().get(
+        return self.app.test_client().post(
             '/api/refresh',
             headers = {
                 'Authorization': f'Bearer {refresh_token}'
