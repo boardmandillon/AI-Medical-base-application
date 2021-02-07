@@ -102,7 +102,7 @@ class User(UserMixin, db.Model):
 
         :param token: Password reset token.
         """
-        user = User.query.filter_by(user_id=token.user_id).first()
+        user = User.query.filter_by(id=token.user_id).first()
 
         if token.action is "password_reset" and user:
             return user
