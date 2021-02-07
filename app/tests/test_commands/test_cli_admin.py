@@ -17,7 +17,6 @@ class TestConfig(Config):
 
 class CliAdminTest(unittest.TestCase):
     """Class for basic test cases."""
-    
     def setUp(self):
         "set up test fixtures"
         app = create_app(TestConfig)
@@ -41,9 +40,9 @@ class CliAdminTest(unittest.TestCase):
     @patch("app.commands.cli_admin.getpass")
     @patch("app.commands.cli_admin.input")
     def test_create_superuser_createsUserAndAddsToDB_whenValidRegistration(self, input_patch, getpass_patch, patch_exit):
-        # create one user so we are not calling filter by first on an empty db 
+        # create one user so we are not calling filter by first on an empty db
         setUp.setUpTestUser()
-        patch_exit.return_value = None   # stops the function calling system exit 
+        patch_exit.return_value = None   # stops the function calling system exit
 
         #mocking command line inputs
         input_patch.side_effect=['admin', 'admin@email.com']
@@ -58,9 +57,9 @@ class CliAdminTest(unittest.TestCase):
     @patch("app.commands.cli_admin.getpass")
     @patch("app.commands.cli_admin.input")
     def test_create_superuser_printsCorrectMessage_whenWrongConfirmPassword(self, input_patch, getpass_patch, patch_exit):
-        # create one user so we are not calling filter by first on an empty db 
+        # create one user so we are not calling filter by first on an empty db
         setUp.setUpTestUser()
-        patch_exit.return_value = None   # stops the function calling system exit 
+        patch_exit.return_value = None   # stops the function calling system exit
         captured_output = StringIO()
         sys.stdout = captured_output
 
@@ -72,7 +71,7 @@ class CliAdminTest(unittest.TestCase):
         sys.stdout = sys.__stdout__
 
         self.assertEqual(captured_output.getvalue(), 'Passwords are not the same\n')
-    
+
     @patch('sys.exit')
     @patch("app.commands.cli_admin.getpass")
     @patch("app.commands.cli_admin.input")
@@ -90,15 +89,15 @@ class CliAdminTest(unittest.TestCase):
         cli_admin.create_superuser()
         sys.stdout = sys.__stdout__
 
-        self.assertEqual(captured_output.getvalue(), 'Must include email, password, name and date of birth fields\n')
-    
+        self.assertEqual(captured_output.getvalue(), 'Must include email, password and name fields\n')
+
     @patch('sys.exit')
     @patch("app.commands.cli_admin.getpass")
     @patch("app.commands.cli_admin.input")
     def test_create_superuser_printsCorrectMessage_whenMissingEmail(self, input_patch, getpass_patch, patch_exit):
-        # create one user so we are not calling filter by first on an empty db 
+        # create one user so we are not calling filter by first on an empty db
         setUp.setUpTestUser()
-        patch_exit.return_value = None   # stops the function calling system exit 
+        patch_exit.return_value = None   # stops the function calling system exit
         captured_output = StringIO()
         sys.stdout = captured_output
 
@@ -109,7 +108,7 @@ class CliAdminTest(unittest.TestCase):
         cli_admin.create_superuser()
         sys.stdout = sys.__stdout__
 
-        self.assertEqual(captured_output.getvalue(), 'Must include email, password, name and date of birth fields\n')
+        self.assertEqual(captured_output.getvalue(), 'Must include email, password and name fields\n')
 
     @patch('sys.exit')
     @patch("app.commands.cli_admin.getpass")
@@ -129,16 +128,16 @@ class CliAdminTest(unittest.TestCase):
         cli_admin.create_superuser()
         sys.stdout = sys.__stdout__
 
-        self.assertEqual(captured_output.getvalue(), 'Must include email, password, name and date of birth fields\n')
+        self.assertEqual(captured_output.getvalue(), 'Must include email, password and name fields\n')
 
     @patch('sys.exit')
     @patch("app.commands.cli_admin.getpass")
     @patch("app.commands.cli_admin.input")
     def test_create_superuser_printsCorrectMessage_whenUserEmailAlreadyExists(self, input_patch, getpass_patch, patch_exit):
-        # create existing admin user 
+        # create existing admin user
         setUp.setUpTestAdmin()
 
-        patch_exit.return_value = None   # stops the function calling system exit 
+        patch_exit.return_value = None   # stops the function calling system exit
         captured_output = StringIO()
         sys.stdout = captured_output
 
@@ -158,11 +157,11 @@ class CliAdminTest(unittest.TestCase):
     @patch("app.commands.cli_admin.input")
     def test_login_returnsUser_whenValidAdminLogin(self, input_patch, getpass_patch):
         setUp.setUpTestAdmin()
-        
+
         #mocking command line inputs
         input_patch.return_value = "admin@email.com"
         getpass_patch.return_value = "adminPassword"
-        
+
         response = cli_admin.login()
 
         self.assertEqual(response, User.query.get(1))
@@ -183,7 +182,7 @@ class CliAdminTest(unittest.TestCase):
 
         self.assertEqual(response, None)
         self.assertEqual(captured_output.getvalue(), 'Please enter your Admin email and password\n')
-    
+
     @patch("app.commands.cli_admin.getpass")
     @patch("app.commands.cli_admin.input")
     def test_login_returnsNoneAndPrintsCorrectMessage_whenMissingPassword(self, input_patch, getpass_patch):
@@ -200,7 +199,7 @@ class CliAdminTest(unittest.TestCase):
 
         self.assertEqual(response, None)
         self.assertEqual(captured_output.getvalue(), 'Please enter your Admin email and password\n')
-    
+
     @patch("app.commands.cli_admin.getpass")
     @patch("app.commands.cli_admin.input")
     def test_login_returnsNoneAndPrintsCorrectMessage_whenUserEmailDoesNotExist(self, input_patch, getpass_patch):
@@ -217,7 +216,7 @@ class CliAdminTest(unittest.TestCase):
 
         self.assertEqual(response, None)
         self.assertEqual(captured_output.getvalue(), 'Please enter a valid admin email and password\n')
-    
+
     @patch("app.commands.cli_admin.getpass")
     @patch("app.commands.cli_admin.input")
     def test_login_returnsNoneAndPrintsCorrectMessage_whenIncorrectPassword(self, input_patch, getpass_patch):
@@ -234,9 +233,8 @@ class CliAdminTest(unittest.TestCase):
 
         self.assertEqual(response, None)
         self.assertEqual(captured_output.getvalue(), 'Please enter a valid admin email and password\n')
-        
-    ############################################################################
 
+    ############################################################################
 
 
 if __name__ == "__main__":

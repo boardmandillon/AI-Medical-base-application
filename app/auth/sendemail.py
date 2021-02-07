@@ -3,16 +3,18 @@ from flask_jwt_extended import create_access_token
 
 from app.emailtask import send_email
 
-
-def send_password_reset_email(user):
-    """Send email with password reset token to the given user."""
-    token = create_access_token(
+def create_password_reset_token(user):
+    return create_access_token(
         identity={
             "user_id": user.id,
             "action": "password_reset"
         },
         fresh=True
     )
+
+def send_password_reset_email(user):
+    """Send email with password reset token to the given user."""
+    token = create_password_reset_token(user)
 
     send_email.delay(
         '[Vulture] Reset Your Password',

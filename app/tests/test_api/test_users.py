@@ -7,6 +7,7 @@ from app.tests.setup import setUp
 from config import Config, basedir
 from unittest.mock import patch
 from app.models.user import User
+from app.auth.sendemail import create_password_reset_token
 
 class TestConfig(Config):
     TESTING = True
@@ -136,6 +137,55 @@ class UsersTest(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response_message,"Must include 'email' field")
 
+    @patch('app.api.users.User.verify_reset_password_token')
+    def test_password_returns204_whenValidNewPasswordRequest(self, test_patch):
+        setUp.setUpTestUser()
+        user = User.query.get(1)
+
+        password_reset_token = create_password_reset_token(user)
+
+        response = self.set_new_password(
+            password_reset_token,
+            'newPassword'
+        )
+
+        self.assertEqual(response.status_code, 204)
+
+    @patch('app.api.users.User.verify_reset_password_token')
+    def test_password_doesNotCallsSetPassword_whenUserDoesNotExist(self, test_patch):
+        setUp.setUpTestUser()
+        user = User.query.get(1)
+        user.id = 999
+        password_reset_token = create_password_reset_token(user)
+
+        test_patch.return_value = False
+
+        response = self.set_new_password(
+            password_reset_token,
+            'newPassword'
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_password_returns403AndErrorMessage_wheninvalidPasswordResetToken(self):
+        response = self.set_new_password(
+            'invalidToken',
+            'newPassword'
+        )
+
+        self.assertEqual(response.status_code, 422)
+
+    @patch('app.api.users.User.verify_reset_password_token')
+    def test_password_returns400AndErrorMessage_whenMissingToken(self, test_patch):
+        setUp.setUpTestUser()
+        test_patch.return_value = User.query.get(1)
+
+        response = self.set_new_password(
+            None,
+            'newPassword'
+        )
+
+        self.assertEqual(response.status_code, 422)
 
     # helper methods
     ############################################################################
@@ -154,7 +204,10 @@ class UsersTest(unittest.TestCase):
     def set_new_password(self, token, new_password):
         return self.app.test_client().put(
             '/api/users/password',
-            data=dict(token=token, new_password = new_password)
+            headers = {
+                'Authorization': f'Bearer {token}'
+            },
+            data=dict(new_password = new_password)
         )
 
     def login(self, email, password):

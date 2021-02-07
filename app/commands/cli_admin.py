@@ -17,8 +17,7 @@ def create_superuser():
     if data.get("password") != password2:
         print("Passwords are not the same")
     elif not (data.get("name") and data.get("email") and data.get("password")):
-        print('Must include email, password, name and date of '
-              'birth fields')
+        print('Must include email, password and name fields')
     elif User.query.filter_by(email=data.get("email")).first():
         print('please use a different email address')
     else:
@@ -27,7 +26,6 @@ def create_superuser():
         user.user_role = UserRoles.ADMIN
         db.session.add(user)
         db.session.commit()
-
 
 def login():
     """Login an admin user.
