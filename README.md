@@ -213,3 +213,19 @@ You can create a user with admin privileges via the command line using:
 Which will then prompt you to enter a name, email and password.
 
 This user can be used to login to the admin interface at: `<host>/admin`
+
+## Running Unit Tests
+
+To run all tests:
+- make sure you are in your virtual environment, where nose is installed
+> cd to project directory base
+> `nosetests`
+
+To run all tests in one specific file, e.g. test_user.py
+- run the python file directly, or 
+- make sure you are in your virtual environment, where nose is installed, and run:
+> `nosetests <path_to_test_file>`
+- e.g.
+> `nosetests app\tests\test_models\test_user.py`
+- you can run this command with -v to see the names of the tests, e.g.
+> `nosetests app\tests\test_models\test_user.py -v`
