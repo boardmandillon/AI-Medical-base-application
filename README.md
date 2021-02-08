@@ -218,14 +218,14 @@ This user can be used to login to the admin interface at: `<host>/admin`
 
 To run all tests:
 - make sure you are in your virtual environment, where nose is installed
-> cd to project directory base
-> `nosetests`
+- cd to project directory base
+- `nosetests`
 
 To run all tests in one specific file, e.g. test_user.py
 - run the python file directly, or 
 - make sure you are in your virtual environment, where nose is installed, and run:
-> `nosetests <path_to_test_file>`
+- `nosetests <path_to_test_file>`
 - e.g.
-> `nosetests app\tests\test_models\test_user.py`
+- `nosetests app\tests\test_models\test_user.py`
 - you can run this command with -v to see the names of the tests, e.g.
-> `nosetests app\tests\test_models\test_user.py -v`
+- `nosetests app\tests\test_models\test_user.py -v`
