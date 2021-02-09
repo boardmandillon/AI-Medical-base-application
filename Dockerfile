@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y \
 
 # Setup Python and install Python requirements
 COPY build/requirements.txt requirements.txt
-RUN python -m venv venv
+RUN python3.7 -m venv venv
+RUN venv/bin/pip install --upgrade pip wheel setuptools
 RUN venv/bin/pip install -r requirements.txt --no-cache-dir
 RUN venv/bin/pip install gunicorn
 

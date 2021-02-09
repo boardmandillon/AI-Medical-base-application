@@ -1,7 +1,7 @@
 version: '3.3'
 services:
     vulture-api:
-        image: "registry.gitlab.com/comp3931-vulture/base-application"
+        image: "registry.gitlab.com/ll16d4b/comp3931"
         ports:
             - "5000:5000"
         deploy:
@@ -82,7 +82,7 @@ services:
             - redis-datavolume:/data
 
     celery:
-        image: "registry.gitlab.com/comp3931-vulture/base-application"
+        image: "registry.gitlab.com/ll16d4b/comp3931"
         command: celery worker -A celery_worker.celery -l info
         networks:
             - vulture-dev
@@ -104,7 +104,7 @@ services:
             CELERY_RESULT_BACKEND: redis://redis-broker:6379
 
     celery-beat:
-        image: "registry.gitlab.com/comp3931-vulture/base-application"
+        image: "registry.gitlab.com/ll16d4b/comp3931"
         command: celery beat -A celery_worker.celery --loglevel=info
         networks:
             - vulture-dev

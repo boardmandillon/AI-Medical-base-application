@@ -104,7 +104,7 @@ class User(UserMixin, db.Model):
         """
         user = User.query.filter_by(id=token.user_id).first()
 
-        if token.action is "password_reset" and user:
+        if token.action == "password_reset" and user:
             return user
         else:
             return None
