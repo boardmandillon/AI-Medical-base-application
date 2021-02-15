@@ -22,7 +22,8 @@ def get_token():
     user = {"user" :{ "id" : user_id, "email" : email}}
     ret = {
         "access_token": create_access_token(identity=user),
-        "refresh_token": create_refresh_token(identity=user)
+        "refresh_token": create_refresh_token(identity=user),
+        "user": {"id" : user_id, "email" : email}
     }
 
     return jsonify(ret), 200
