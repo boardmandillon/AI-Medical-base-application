@@ -26,7 +26,6 @@ class AAPDiagnosis:
             AAPDiagnosis.PROJECT_NAME, data))
 
         model = AAPDiagnosis.MODEL(user_id=current_user['id'])
-        print(model)
         try:
             model.from_dict(data)
         except ValueError as e:

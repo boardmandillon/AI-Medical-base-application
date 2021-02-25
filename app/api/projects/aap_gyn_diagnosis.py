@@ -35,7 +35,7 @@ def aap_gyn_get_diagnoses():
     """Retrieves diagnoses of a user."""
     current_user = get_jwt_identity()
     return jsonify(AAPGynDiagnosisModel.objects().filter(
-        user_id=current_user.id))
+        user_id=current_user['id']))
 
 
 @bp.route('/aap-gyn-diagnosis/<doc_id>')
@@ -45,7 +45,7 @@ def aap_gyn_get_diagnosis_from_id(doc_id):
     current_user = get_jwt_identity()
 
     example_doc = AAPGynDiagnosisModel.objects.get_or_404(
-        id=doc_id, user_id=current_user.id)
+        id=doc_id, user_id=current_user['id'])
     return jsonify(example_doc)
 
 
@@ -56,7 +56,7 @@ def aap_gyn_delete_diagnosis_from_id(doc_id):
     current_user = get_jwt_identity()
 
     AAPGynDiagnosisModel.objects.get_or_404(
-        id=doc_id, user_id=current_user.id).delete()
+        id=doc_id, user_id=current_user['id']).delete()
     return jsonify({"success": True})
 
 
@@ -73,7 +73,7 @@ def confirm_aap_gyn_diagnosis(doc_id):
     current_user = get_jwt_identity()
 
     model = AAPGynDiagnosisModel.objects.get_or_404(
-        id=doc_id, user_id=current_user.id)
+        id=doc_id, user_id=current_user['id'])
 
     if not model.set_actual_diagnosis(data.get("l_actual_diagnosis")):
         return bad_request(

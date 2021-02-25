@@ -25,13 +25,22 @@ Alternatively the docker-compose.yml file can be copied separately from the
 rest of the code checkout, in which case the absolute path to the
 Docker-compose file should be supplied in place of the -f argument.
 
+## Rebuilding the docker image
+
+The Docker image can be rebuilt and stored on the remote Docker repository.
+
+- cd to project directory base
+- Run the following commands:
+
+`docker build -t registry.gitlab.com/ll16d4b/comp3931 .`
+`docker push registry.gitlab.com/ll16d4b/comp3931`
+
 ---
 
 **Note:**
 
 Our remote Docker repository is at:
-https://gitlab.com/comp3931-vulture/base-application/container_registry/
-
+https://gitlab.com/ll16d4b/comp3931/container_registry/
 ---
 
 ## Working on the application
