@@ -16,7 +16,7 @@ class UrineDipstickAnalysis:
         app.logger.info("{} | Saving a new model with the data: {}".format(
             UrineDipstickAnalysis.PROJECT_NAME, data))
 
-        model = UrineDipstickModel(user_id=current_user.id, **data)
+        model = UrineDipstickModel(user_id=current_user['id'], **data)
         model.save()
 
         return model

@@ -26,7 +26,7 @@ def example_create():
 def example_get():
     """Retrieves a users documents."""
     current_user = get_jwt_identity()
-    return jsonify(ExampleModel.objects().filter(user_id=current_user.id))
+    return jsonify(ExampleModel.objects().filter(user_id=current_user['id']))
 
 
 @bp.route('/example/<doc_id>')
@@ -36,7 +36,7 @@ def example_get_from_id(doc_id):
     current_user = get_jwt_identity()
 
     example_doc = ExampleModel.objects.get_or_404(
-        id=doc_id, user_id=current_user.id)
+        id=doc_id, user_id=current_user['id'])
 
     return jsonify(example_doc)
 
@@ -48,7 +48,7 @@ def example_delete_from_id(doc_id):
     current_user = get_jwt_identity()
 
     ExampleModel.objects.get_or_404(
-        id=doc_id, user_id=current_user.id).delete()
+        id=doc_id, user_id=current_user['id']).delete()
     return jsonify({"success": True})
 
 
@@ -65,7 +65,7 @@ def example_update(doc_id):
     current_user = get_jwt_identity()
 
     model = ExampleModel.objects.get_or_404(
-        id=doc_id, user_id=current_user.id)
+        id=doc_id, user_id=current_user['id'])
     model.save(data)
 
     return jsonify(model)

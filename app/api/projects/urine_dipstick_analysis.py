@@ -47,7 +47,7 @@ def upload_urine_analysis_image():
 
     current_user = get_jwt_identity()
 
-    diagnosis = UrineDipstickModel(user_id=current_user.id, content_type=content_type,
+    diagnosis = UrineDipstickModel(user_id=current_user['id'], content_type=content_type,
                                    **data, diagnosis_photo=diagnosis_photo)
     diagnosis.save()
 
@@ -70,12 +70,12 @@ def get_urine_analysis():
     object_id = data.get('id')
 
     if not UrineDipstickModel.objects.get(
-            user_id=current_user.id,
+            user_id=current_user['id'],
             diagnosis_photo=bson.objectid.ObjectId(object_id)):
         return bad_request('no file with the id: ' + data.get('id') + ' for this user')
 
     user_data = UrineDipstickModel.objects.get(
-        user_id=current_user.id, diagnosis_photo=bson.objectid.ObjectId(object_id))
+        user_id=current_user['id'], diagnosis_photo=bson.objectid.ObjectId(object_id))
     diagnosis_photo = user_data.diagnosis_photo.read()
 
     results = image_pre_processing(diagnosis_photo)

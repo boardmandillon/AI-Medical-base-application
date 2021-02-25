@@ -19,7 +19,7 @@ def get_token():
     user_id = g.current_user.id
     email = g.current_user.email
 
-    user = {"user" :{ "id" : user_id, "email" : email}}
+    user = { "id" : user_id, "email" : email}
     ret = {
         "access_token": create_access_token(identity=user),
         "refresh_token": create_refresh_token(identity=user),

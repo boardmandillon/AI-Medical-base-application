@@ -25,7 +25,7 @@ class AAPGynDiagnosis:
         app.logger.info("{} | Saving a new model with the data: {}".format(
             AAPGynDiagnosis.PROJECT_NAME, data))
 
-        model = AAPGynDiagnosis.MODEL(user_id=current_user.id)
+        model = AAPGynDiagnosis.MODEL(user_id=current_user['id'])
         try:
             model.from_dict(data)
         except ValueError as e:

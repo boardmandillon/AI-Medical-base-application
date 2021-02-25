@@ -20,7 +20,7 @@ class ExampleProject:
             "{} | Saving a new model with the data: {}".format(
                 ExampleProject.PROJECT_NAME, data))
 
-        model = ExampleModel(user_id=current_user.id, **data)
+        model = ExampleModel(user_id=current_user['id'], **data)
         model.save()
 
         return model

@@ -16,7 +16,7 @@ class SkinCancerAnalysis:
         app.logger.info("{} | Saving a new model with the data: {}".format(
             SkinCancerAnalysis.PROJECT_NAME, data))
 
-        model = skinCancerModel(user_id=current_user.id, **data)
+        model = skinCancerModel(user_id=current_user['id'], **data)
         model.save()
 
         return model

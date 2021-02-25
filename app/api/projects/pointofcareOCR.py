@@ -22,7 +22,7 @@ def pocResult():
     current_user = get_jwt_identity()
 
     model = POC_OCR_Model(
-        user_id=current_user.id,
+        user_id=current_user['id'],
         time=time,
         systolic=systolic,
         diastolic=diastolic,
@@ -38,7 +38,7 @@ def pocResult():
 def getPocRecords():
     """Retrieves records of a user."""
     current_user = get_jwt_identity()
-    return jsonify(POC_OCR_Model.objects().filter(user_id=current_user.id))
+    return jsonify(POC_OCR_Model.objects().filter(user_id=current_user['id']))
 
 
 @bp.route('/pocresult/<doc_id>', methods=['DELETE'])
@@ -46,6 +46,6 @@ def getPocRecords():
 def poc_delete_from_id(doc_id):
     """Deletes records corresponding to the given ID."""
     current_user = get_jwt_identity()
-    POC_OCR_Model.objects.get_or_404(id=doc_id, user_id=current_user.id).delete()
+    POC_OCR_Model.objects.get_or_404(id=doc_id, user_id=current_user['id']).delete()
 
     return jsonify({"success": True})

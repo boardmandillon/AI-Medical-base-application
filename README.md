@@ -222,7 +222,7 @@ To run all tests:
 - `nosetests`
 
 To run all tests in one specific file, e.g. test_user.py
-- run the python file directly, or 
+- run the python file directly, or
 - make sure you are in your virtual environment, where nose is installed, and run:
 - `nosetests <path_to_test_file>`
 - e.g.

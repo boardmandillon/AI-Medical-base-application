@@ -54,7 +54,7 @@ def skin_cancer_create_diagnosis():
 
     current_user = get_jwt_identity()
 
-    diagnosis = skinCancerModel(user_id=current_user.id, content_type=content_type,
+    diagnosis = skinCancerModel(user_id=current_user['id'], content_type=content_type,
                                 **data, diagnosis_photo=diagnosis_photo)
     diagnosis.save()
 
@@ -76,7 +76,7 @@ def skin_cancer_get_diagnosis():
 
     try:
         prediction = predictImage()
-        pred = skinCancerModel(user_id=current_user.id, t_diagnosis=prediction)
+        pred = skinCancerModel(user_id=current_user['id'], t_diagnosis=prediction)
         pred.save()
     except IOError:
         return bad_request('image file is not valid')
@@ -96,7 +96,7 @@ def skin_cancer_get_diagnosis():
 def getRecords():
     """Retrieves all records relating to the user currently logged in."""
     current_user = get_jwt_identity()
-    return jsonify(skinCancerModel.objects().filter(user_id=current_user.id))
+    return jsonify(skinCancerModel.objects().filter(user_id=current_user['id']))
 
 
 @bp.route('/skin_cancer_analysis/<doc_id>', methods=['DELETE'])
@@ -105,7 +105,7 @@ def skin_cancer_diagnosis_delete_from_id(doc_id):
     """Deletes record corresponding to the given ID."""
     current_user = get_jwt_identity()
     skinCancerModel.objects.get_or_404(
-        id=doc_id, user_id=current_user.id).delete()
+        id=doc_id, user_id=current_user['id']).delete()
     return jsonify({"success": True})
 
 
@@ -123,7 +123,7 @@ def skin_cancer_diagnosis_update(doc_id):
 
     model = skinCancerModel.objects.get_or_404(
         id=doc_id,
-        user_id=current_user.id
+        user_id=current_user['id']
     )
 
     model.save(data)

@@ -20,7 +20,7 @@ class PointOfCareOCR:
             "{} | Saving a new model with the data: {}".format(
                 PointOfCareOCR.PROJECT_NAME, data))
 
-        model = POC_OCR_Model(user_id=current_user.id, **data)
+        model = POC_OCR_Model(user_id=current_user['id'], **data)
         model.save()
 
         return model
