@@ -2,8 +2,22 @@ from flask import request, g, jsonify
 from flask_jwt_extended import (jwt_required, get_jwt_identity)
 
 from app.api import bp
+from app.projects.pointofcare_ocr.pointofcare import PointOfCareOCR
 from app.projects.pointofcare_ocr.pointofcare_model import POC_OCR_Model
 
+# @bp.route('/poc_pic', methods=['POST'])
+# @jwt_required
+# def read_pic():
+#     # handle getting picture and OCR here
+#     data = request.get_json() or {}
+#     current_user = get_jwt_identity()
+#     results = PointOfCareOCR().read_pic(data, current_user)
+#     return results
+
+@bp.route('/poc_pic', methods=['POST'])
+def receive_pic():
+    data = request.get_json() or {}
+    return data
 
 @bp.route('/pocresult', methods=['POST'])
 @jwt_required
