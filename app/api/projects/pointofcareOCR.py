@@ -1,25 +1,22 @@
-from flask import request, g, jsonify
-from flask_jwt_extended import (jwt_required, get_jwt_identity)
-
+from flask import request  , jsonify
+from flask_jwt_extended import (jwt_required , get_jwt_identity)
 from app.api import bp
-from app.projects.pointofcare_ocr.pointofcare import PointOfCareOCR
 from app.projects.pointofcare_ocr.pointofcare_model import POC_OCR_Model
 
-# @bp.route('/poc_pic', methods=['POST'])
-# @jwt_required
-# def read_pic():
-#     # handle getting picture and OCR here
-#     data = request.get_json() or {}
-#     current_user = get_jwt_identity()
-#     results = PointOfCareOCR().read_pic(data, current_user)
-#     return results
 
-@bp.route('/poc_pic', methods=['POST'])
-def receive_pic():
-    data = request.get_json() or {}
-    return data
+@bp.route ( '/pocimg/' , methods=['POST'] )
+@jwt_required
+def pocpic():
+    if 'application/json' in request.headers['Content-Type']:
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict() or {}
 
-@bp.route('/pocresult', methods=['POST'])
+    current_user = get_jwt_identity()
+    return 200
+
+
+@bp.route ( '/pocresult' , methods=['POST'] )
 @jwt_required
 def pocResult():
     """Creates record of Blood pressure results from JSON data in the request."""
@@ -36,7 +33,7 @@ def pocResult():
     current_user = get_jwt_identity()
 
     model = POC_OCR_Model(
-        user_id=current_user['id'],
+        user_id=current_user.id,
         time=time,
         systolic=systolic,
         diastolic=diastolic,
@@ -52,7 +49,7 @@ def pocResult():
 def getPocRecords():
     """Retrieves records of a user."""
     current_user = get_jwt_identity()
-    return jsonify(POC_OCR_Model.objects().filter(user_id=current_user['id']))
+    return jsonify(POC_OCR_Model.objects().filter(user_id=current_user.id))
 
 
 @bp.route('/pocresult/<doc_id>', methods=['DELETE'])
@@ -60,6 +57,6 @@ def getPocRecords():
 def poc_delete_from_id(doc_id):
     """Deletes records corresponding to the given ID."""
     current_user = get_jwt_identity()
-    POC_OCR_Model.objects.get_or_404(id=doc_id, user_id=current_user['id']).delete()
+    POC_OCR_Model.objects.get_or_404(id=doc_id, user_id=current_user.id).delete()
 
     return jsonify({"success": True})

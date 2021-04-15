@@ -27,5 +27,5 @@ class PointOfCareOCR:
 
     # insert algorithm here
     @staticmethod
-    def read_picture(self, data, current_user ):
+    def detect_digits(self, data, current_user ):
         pass
