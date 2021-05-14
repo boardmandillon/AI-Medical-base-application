@@ -72,10 +72,8 @@ def pocResult():
     # pulse = data.get('heartRate')
 
     current_user = get_jwt_identity()
-    model, error = PointOfCareOCR._save_data(data, current_user)
+    model = PointOfCareOCR._save_data(data, current_user)
     app.logger.info("Model saved: {}".format(model))
-    if error is not None:
-        return jsonify(error), 400
     # model = POC_OCR_Model(
     #     user_id=current_user['id'] ,
     #     time=time ,
@@ -85,7 +83,7 @@ def pocResult():
     # )
     #
     # model.save()
-    return 201
+    return jsonify(model), 201
 
 
 @bp.route ( '/pocresult' )
@@ -93,7 +91,7 @@ def pocResult():
 def getPocRecords () :
     """Retrieves records of a user."""
     current_user = get_jwt_identity ()
-    return jsonify ( POC_OCR_Model.objects ().filter ( user_id=current_user.id ) )
+    return jsonify ( POC_OCR_Model.objects ().filter ( user_id=current_user['id'] ) )
 
 
 @bp.route ( '/pocresult/<doc_id>' , methods=['DELETE'] )
@@ -101,6 +99,6 @@ def getPocRecords () :
 def poc_delete_from_id ( doc_id ) :
     """Deletes records corresponding to the given ID."""
     current_user = get_jwt_identity ()
-    POC_OCR_Model.objects.get_or_404 ( id=doc_id , user_id=current_user.id ).delete ()
+    POC_OCR_Model.objects.get_or_404 ( id=doc_id , user_id=current_user['id'] ).delete ()
 
     return jsonify ( {"success" : True})
