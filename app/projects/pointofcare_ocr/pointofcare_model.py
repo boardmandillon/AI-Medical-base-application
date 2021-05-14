@@ -10,7 +10,6 @@ class POC_OCR_Model(ProjectBase):
     """
 
     possible_labels = {}
-
     time = db.StringField(required=True)
     systolic = db.StringField(required=True)
     diastolic = db.StringField(required=True)

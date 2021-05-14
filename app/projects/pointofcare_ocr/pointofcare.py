@@ -24,3 +24,8 @@ class PointOfCareOCR:
         model.save()
 
         return model
+
+    # insert algorithm here
+    @staticmethod
+    def detect_digits(self, data, current_user ):
+        pass

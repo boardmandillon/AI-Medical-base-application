@@ -45,6 +45,7 @@ def create_app(config_class=Config):
         stream_handler = logging.StreamHandler()
         stream_handler.setLevel(logging.INFO)
         app.logger.addHandler(stream_handler)
+        app.logger.setLevel(logging.DEBUG)
     else:
         if not os.path.exists('logs'):
             os.mkdir('logs')
