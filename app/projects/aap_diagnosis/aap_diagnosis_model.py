@@ -15,6 +15,10 @@ class AAPBaseModel(ProjectBase):
 
     ml_symptoms = db.ListField(db.IntField(), required=True)
 
+    # test data 
+    te_t_diagnosis = None # test target field from the database model
+    te_l_actual_diagnosis = None  # test label field for test data
+
     meta = {'allow_inheritance': True}
 
     def from_dict(self, data):
@@ -33,7 +37,6 @@ class AAPBaseModel(ProjectBase):
 
         for q in self.questions:
             received_answers = data.get(q, [])
-
             answers = self.questions[q].get("answers")
             required = self.questions[q].get("required")
             mutually_exclusive = self.questions[q].get("mutually_exclusive")
@@ -120,8 +123,12 @@ class AAPDiagnosisModel(AAPBaseModel):
     questions = AAP_QUESTIONS
 
     t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
+    te_t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
     l_actual_diagnosis = db.StringField(
         choices=possible_labels.keys(), null=True)
+    te_l_actual_diagnosis = db.StringField(
+        choices=possible_labels.keys(), null=True)
+
 
 
 class AAPGynDiagnosisModel(AAPBaseModel):
@@ -139,5 +146,9 @@ class AAPGynDiagnosisModel(AAPBaseModel):
     questions = AAP_GYN_QUESTIONS
 
     t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
+    te_t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
     l_actual_diagnosis = db.StringField(
         choices=possible_labels.keys(), null=True)
+    te_l_actual_diagnosis = db.StringField(
+        choices=possible_labels.keys(), null=True)
+

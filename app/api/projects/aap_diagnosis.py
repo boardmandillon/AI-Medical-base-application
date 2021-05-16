@@ -82,3 +82,14 @@ def confirm_aap_diagnosis(doc_id):
         model.date_modified = datetime.datetime.utcnow()
         model.save()
         return jsonify(model.to_dict())
+
+
+@bp.route('/aap-diagnosis/dataset-accuracy')
+@jwt_required
+def aap_get_dataset_accuracy():
+    """Retrieves dataset accuracy."""
+    score = AAPDiagnosis.model_accuracy()
+    if score:
+        return jsonify(score), 201
+    else:
+        return bad_request("Error calculating accuracy.")
