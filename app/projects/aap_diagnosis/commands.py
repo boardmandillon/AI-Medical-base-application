@@ -23,15 +23,26 @@ def load_data(json_file, model):
             if not data or not labels or len(data) != len(labels):
                 print("Please provide a file in the correct format")
                 return
+            
+            count=0 # to keep track of where in the data we are
+            # split data into 70% training data and 30% test data, and save
+            training_limit = 0.7 * len(data)    
 
             for i, symptoms in enumerate(data):
                 diagnosis = model(user_id=user.id)
                 label = diagnosis.get_label_from_numeric(labels[i])
                 diagnosis.ml_symptoms = symptoms
-                diagnosis.l_actual_diagnosis = label
+                if count<training_limit:
+                    diagnosis.l_actual_diagnosis = label
+                    count+=1
+                else:
+                    diagnosis.te_l_actual_diagnosis = label
+                
+
                 diagnosis.save()
 
             print("{} data records added".format(i))
+            print("{} set aside for training, {} set aside for testing".format(count, len(data)-count))
             return True
     else:
         print("User must sign in as an admin to perform this function")
