@@ -3,34 +3,36 @@ from flask import current_app as app
 import json
 import pandas as pd
 
-from app.projects.aap_diagnosis.aap_diagnosis_model import AAPDiagnosisModel
+from app.projects.aap_diagnosis.aap_diagnosis_model import AAPWomenDiagnosisModel
 from app.machine_learning.bernoulli_naive_bayes import BernoulliNaiveBayes
 from .aap_questions import AAP_QUESTIONS
 from app import celery
 
 from sklearn.metrics import accuracy_score
 
-class AAPDiagnosis:
-    """AAP diagnosis project for diagnosing acute abdominal pain."""
+class AAPWomenDiagnosis:
+    """AAP diagnosis project for diagnosing acute abdominal pain.
+        Used for the all women dataset."""
 
-    PROJECT_NAME = "AAPDiagnosis"
-    MODEL = AAPDiagnosisModel
+    PROJECT_NAME = "AAPWomenDiagnosis"
+    MODEL = AAPWomenDiagnosisModel
 
     @staticmethod
-    def _save_data(data, current_user):
+    def _save_data(data, current_user, aap_id):
         """Save the passed in data to MongoDB under the given user.
 
         :return: Returns the model saved and an error message if there is one.
             If an error occurs the None will be returned as the model.
-        :rtype: AAPDiagnosisModel, None or None, str
+        :rtype: AAPWomenDiagnosisModel, None or None, str
         """
 
         app.logger.info("{} | Saving a new model with the data: {}".format(
-            AAPDiagnosis.PROJECT_NAME, data))
+            AAPWomenDiagnosis.PROJECT_NAME, data))
 
-        model = AAPDiagnosis.MODEL(user_id=current_user['id'])
+        model = AAPWomenDiagnosis.MODEL(user_id=current_user['id'])
         try:
             model.from_dict(data)
+            model.setAapId(str(aap_id))
         except ValueError as e:
             return None, str(e)
         model.save()
@@ -38,7 +40,7 @@ class AAPDiagnosis:
         return model, None
 
     @staticmethod
-    def predict(data, current_user):
+    def predict(data, current_user, aap_id):
         """Calculate diagnosis prediction from the given data.
 
         :param data: Data to use for prediction.
@@ -49,12 +51,12 @@ class AAPDiagnosis:
         :return: The document model representing the data, without the
             prediction and an error message if there is one. If an error
             occurs the None will be returned as the model.
-        :rtype: AAPDiagnosisModel, None or None, str
+        :rtype: AAPWomenDiagnosisModel, None or None, str
         """
-        model, error = AAPDiagnosis._save_data(data, current_user)
+        model, error = AAPWomenDiagnosis._save_data(data, current_user, aap_id)
 
         if model and not error:
-            make_prediction.delay(
+            make_women_prediction.delay(
                 str(model.id), model.to_json())
 
         return model, error
@@ -70,8 +72,8 @@ class AAPDiagnosis:
         """
 
         classifier = BernoulliNaiveBayes(
-            AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL,
-            AAPDiagnosis.MODEL.possible_labels
+            AAPWomenDiagnosis.PROJECT_NAME, AAPWomenDiagnosis.MODEL,
+            AAPWomenDiagnosis.MODEL.possible_labels
         )
 
         classifier.fetch_data()
@@ -79,7 +81,7 @@ class AAPDiagnosis:
 
         if not data:
             app.logger.info("{} | Model {} has no test data.".format(
-                    AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL))
+                    AAPWomenDiagnosis.PROJECT_NAME, AAPWomenDiagnosis.MODEL))
             return None
         else:
 
@@ -94,7 +96,7 @@ class AAPDiagnosis:
             score = classifier.ml_model.score(ml_data, label_values, sample_weight=None)
 
             app.logger.info("{} | Model {} has method 1 accuracy of {}.".format(
-                AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL, score))
+                AAPWomenDiagnosis.PROJECT_NAME, AAPWomenDiagnosis.MODEL, score))
 
             # # # # # # # # # # # # METHOD 2 # # # # # # # # # # # # # # # # # # # # # # 
             # this one uses the predicted diagnoses for test data made from the 
@@ -105,22 +107,21 @@ class AAPDiagnosis:
             # convert symptoms from string to number
             if(data['te_t_diagnosis'][0]!=None):
                 str_y_pred = data['te_t_diagnosis']
-                y_pred = str_y_pred.apply(lambda x : AAPDiagnosis.MODEL.possible_labels[x])
+                y_pred = str_y_pred.apply(lambda x : AAPWomenDiagnosis.MODEL.possible_labels[x])
                 y_true = data[label_field]
                 second_score = accuracy_score(y_true, y_pred)
 
                 app.logger.info("{} | Model {} has method 2 accuracy of {}.".format(
-                    AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL, second_score))
+                    AAPWomenDiagnosis.PROJECT_NAME, AAPWomenDiagnosis.MODEL, second_score))
             else:
                 app.logger.info("{} | Model {} Accuracy cannot be calculated by method 2 as aap_diagnosis_test has not been run.".format(
-                    AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL))
+                    AAPWomenDiagnosis.PROJECT_NAME, AAPWomenDiagnosis.MODEL))
 
-            
             return score
 
 
-@celery.task(name='aap_diagnosis_predict')
-def make_prediction(doc_id, data):
+@celery.task(name='aap_women_diagnosis_predict')
+def make_women_prediction(doc_id, data):
     """Celery task to calculate the diagnosis prediction for the data.
 
     :param doc_id: The ID of the MongoDB document.
@@ -130,24 +131,23 @@ def make_prediction(doc_id, data):
     :type data: dict
     """
     classifier = BernoulliNaiveBayes(
-        AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL,
-        AAPDiagnosis.MODEL.possible_labels)
+        AAPWomenDiagnosis.PROJECT_NAME, AAPWomenDiagnosis.MODEL,
+        AAPWomenDiagnosis.MODEL.possible_labels)
 
     prediction = classifier.predict(json.loads(data))
 
     if prediction:
         app.logger.info(
             "{} | Updating document '{}' with prediction: '{}'".format(
-                AAPDiagnosis.PROJECT_NAME, doc_id, prediction))
+                AAPWomenDiagnosis.PROJECT_NAME, doc_id, prediction))
 
-        AAPDiagnosis.MODEL.objects.get(id=doc_id).update(
+        AAPWomenDiagnosis.MODEL.objects.get(id=doc_id).update(
             set__t_diagnosis=prediction,
-            #TODO set prediction accuracy - no not here only in new ones? 
         )
 
 
-@celery.task(name='aap_diagnosis_train')
-def train_classifier(force_retrain=False):
+@celery.task(name='aap_women_diagnosis_train')
+def train_women_classifier(force_retrain=False):
     """Periodic Celery task for retraining the ML model if the data has
     changed.
 
@@ -156,20 +156,20 @@ def train_classifier(force_retrain=False):
     :type force_retrain: bool
     """
     classifier = BernoulliNaiveBayes(
-        AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL,
-        AAPDiagnosis.MODEL.possible_labels)
+        AAPWomenDiagnosis.PROJECT_NAME, AAPWomenDiagnosis.MODEL,
+        AAPWomenDiagnosis.MODEL.possible_labels)
 
     classifier.train(force_retrain=force_retrain)
 
 
-@celery.task(name='aap_diagnosis_test')
-def test_classifier():
+@celery.task(name='aap_women_diagnosis_test')
+def test_women_classifier():
     """Celery task for using the classifier to calculate predictions
         for the test data.
     """
     classifier = BernoulliNaiveBayes(
-            AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL,
-            AAPDiagnosis.MODEL.possible_labels
+            AAPWomenDiagnosis.PROJECT_NAME, AAPWomenDiagnosis.MODEL,
+            AAPWomenDiagnosis.MODEL.possible_labels
         )
 
     classifier.fetch_data()
@@ -177,26 +177,25 @@ def test_classifier():
 
     if not data:
         app.logger.info("{} | Model {} has no test data.".format(
-                    AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL))
+                    AAPWomenDiagnosis.PROJECT_NAME, AAPWomenDiagnosis.MODEL))
         return None
     else:
         app.logger.info("{} | Model {} being validated using test data...".format(
-                    AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL))
+                    AAPWomenDiagnosis.PROJECT_NAME, AAPWomenDiagnosis.MODEL))
         # use the existing model to make predictions on all test data
         #  update each testing record with doc_id corresponding to data
         for i in range(0, len(doc_ids)):
-            model = AAPDiagnosisModel.objects.get_or_404(
+            model = AAPWomenDiagnosisModel.objects.get_or_404(
                     id=doc_ids[i]['$oid'], user_id=1)
 
             if model:
-                make_test_prediction.delay(
+                make_women_test_prediction.delay(
                     str(model.id), model.to_json()
             )
 
 
-
-@celery.task(name='aap_diagnosis_test_predict')
-def make_test_prediction(doc_id, data):
+@celery.task(name='aap_women_diagnosis_test_predict')
+def make_women_test_prediction(doc_id, data):
     """Celery task to calculate the diagnosis prediction for the TEST data.
 
     :param doc_id: The ID of the MongoDB document.
@@ -206,17 +205,17 @@ def make_test_prediction(doc_id, data):
     :type data: dict
     """
     classifier = BernoulliNaiveBayes(
-        AAPDiagnosis.PROJECT_NAME, AAPDiagnosis.MODEL,
-        AAPDiagnosis.MODEL.possible_labels)
+        AAPWomenDiagnosis.PROJECT_NAME, AAPWomenDiagnosis.MODEL,
+        AAPWomenDiagnosis.MODEL.possible_labels)
 
     prediction = classifier.predict(json.loads(data))
 
     if prediction:
         print(
             "{} | Updating document '{}' with TEST prediction: '{}'".format(
-                AAPDiagnosis.PROJECT_NAME, doc_id, prediction))
+                AAPWomenDiagnosis.PROJECT_NAME, doc_id, prediction))
 
-        AAPDiagnosis.MODEL.objects.get(id=doc_id).update(
+        AAPWomenDiagnosis.MODEL.objects.get(id=doc_id).update(
             set__te_t_diagnosis=prediction,
         )
 

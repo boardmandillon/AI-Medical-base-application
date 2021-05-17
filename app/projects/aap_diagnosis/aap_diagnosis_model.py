@@ -128,8 +128,60 @@ class AAPDiagnosisModel(AAPBaseModel):
         choices=possible_labels.keys(), null=True)
     te_l_actual_diagnosis = db.StringField(
         choices=possible_labels.keys(), null=True)
+    
+class AAPMenDiagnosisModel(AAPBaseModel):
+    """Document definition for Men AAP diagnosis."""
+    possible_labels = {
+        "Appendicitis": 1,
+        "Diverticular Disease": 2,
+        "Perforated Ulcer": 3,
+        "Non Specific Abdominal Pain": 4,
+        "Cholecystitis": 5,
+        "Bowel Obstruction": 6,
+        "Pancreatitis": 7,
+        "Renal Colic": 8,
+        "Dyspepsia": 9,
+    }
+    number_symptoms = 136
+    questions = AAP_QUESTIONS
 
+    aap_id = db.StringField(null=True)
+    t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
+    te_t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
+    l_actual_diagnosis = db.StringField(
+        choices=possible_labels.keys(), null=True)
+    te_l_actual_diagnosis = db.StringField(
+        choices=possible_labels.keys(), null=True)
+    
+    def setAapId(self, aap_id):
+        self.aap_id = aap_id
 
+class AAPWomenDiagnosisModel(AAPBaseModel):
+    """Document definition for Women AAP diagnosis."""
+    possible_labels = {
+        "Appendicitis": 1,
+        "Diverticular Disease": 2,
+        "Perforated Ulcer": 3,
+        "Non Specific Abdominal Pain": 4,
+        "Cholecystitis": 5,
+        "Bowel Obstruction": 6,
+        "Pancreatitis": 7,
+        "Renal Colic": 8,
+        "Dyspepsia": 9,
+    }
+    number_symptoms = 136
+    questions = AAP_QUESTIONS
+
+    aap_id = db.StringField(null=True)
+    t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
+    te_t_diagnosis = db.StringField(choices=possible_labels.keys(), null=True)
+    l_actual_diagnosis = db.StringField(
+        choices=possible_labels.keys(), null=True)
+    te_l_actual_diagnosis = db.StringField(
+        choices=possible_labels.keys(), null=True)
+    
+    def setAapId(self, aap_id):
+        self.aap_id = aap_id
 
 class AAPGynDiagnosisModel(AAPBaseModel):
     """Document definition for AAP diagnosis with additional gynae fields."""

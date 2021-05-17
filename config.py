@@ -50,4 +50,20 @@ class Config(object):
             'task': 'aap_gyn_diagnosis_train',
             'schedule': crontab(minute=0, hour=0, day_of_week=2),
         },
+        'aap_men_diagnosis_train': {
+            'task': 'aap_men_diagnosis_train',
+            'schedule': crontab(minute=0, hour=0, day_of_week=3),
+        },
+        'aap_men_diagnosis_test': {
+            'task': 'aap_men_diagnosis_test',
+            'schedule': crontab(minute=0, hour=0, day_of_week=3),
+        },
+        'aap_women_diagnosis_train': {
+            'task': 'aap_women_diagnosis_train',
+            'schedule': crontab(minute=0, hour=0, day_of_week=4),
+        },
+        'aap_women_diagnosis_test': {
+            'task': 'aap_women_diagnosis_test',
+            'schedule': crontab(minute=0, hour=0, day_of_week=4),
+        },
     }
