@@ -4,7 +4,7 @@ import json
 from app.commands import ml_bp
 from app.commands.cli_admin import login
 from app.projects.aap_diagnosis.aap_diagnosis_model import \
-    AAPDiagnosisModel, AAPGynDiagnosisModel
+    AAPDiagnosisModel, AAPMenDiagnosisModel, AAPWomenDiagnosisModel, AAPGynDiagnosisModel
 
 
 def load_data(json_file, model):
@@ -71,6 +71,52 @@ def train(json_file):
         which the row is in.
     """
     load_data(json_file, AAPDiagnosisModel)
+
+@ml_bp.cli.command('load_aap_men_data')
+@click.argument('json_file')
+def train(json_file):
+    """Loads AAP Men training data from the given JSON file and saves it
+    to the database.
+
+    :param json_file: JSON file name, with the file it corresponds to being
+        in the format:
+        {
+            "data": [
+                [symptom1, symptom2, ..., symptomN],
+                ...
+            ],
+            "labels": [
+                label1, ...
+            ]
+        }
+        Where the symptoms corresponds to 1 if the patient has that symptom
+        or 0 if not. The label is a numerical value representing the class
+        which the row is in.
+    """
+    load_data(json_file, AAPMenDiagnosisModel)
+
+@ml_bp.cli.command('load_aap_women_data')
+@click.argument('json_file')
+def train(json_file):
+    """Loads AAP Women training data from the given JSON file and saves it
+    to the database.
+
+    :param json_file: JSON file name, with the file it corresponds to being
+        in the format:
+        {
+            "data": [
+                [symptom1, symptom2, ..., symptomN],
+                ...
+            ],
+            "labels": [
+                label1, ...
+            ]
+        }
+        Where the symptoms corresponds to 1 if the patient has that symptom
+        or 0 if not. The label is a numerical value representing the class
+        which the row is in.
+    """
+    load_data(json_file, AAPWomenDiagnosisModel)
 
 
 @ml_bp.cli.command('load_aap_gyn_data')
