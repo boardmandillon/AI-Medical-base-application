@@ -1,32 +1,50 @@
-from tensorflow import keras
-import numpy as np
+import torch
+import torch.nn.functional as functional
+from torchvision.transforms import transforms
 
-from keras_preprocessing.image import ImageDataGenerator
-from tensorflow.python.keras.models import load_model
-from pathlib import Path
+from app.projects.skin_cancer_diagnosis.pre_processing import pre_process_image
 
-IMG_HEIGHT = 224
-IMG_WIDTH = 224
+DEVICE = torch.device("cpu")
+transform_pipeline = transforms.Compose([
+    transforms.Resize(224),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+])
 
 
 def predict_image(image):
-    """ Takes no arguments.
-        Predicts the classification of the a image
-
-        Takes the file as input and pre-processes the image
-            - COLOUR_NORMALIZATION
-            - IMG_HEIGHT = 224
-            - IMG_WIDTH = 224
-
-        The classification prediction output is formatted to a percentage and
-        then returned.
     """
-    model = load_model(Path("app/projects/skin_cancer_analysis/model.h5"))
-    prediction = model.predict_generator(image)
+    :param image: PIL Image to use for prediction
 
-    prediction = np.round(prediction, 2)
-    prediction = str(prediction)[2:-2]
-    readable_prediction = float(prediction) * 100
-    prediction = str(readable_prediction)
+    Predicts the classification of the a image
+
+    Takes an image as input and pre-processes the image and converts to a
+    tensor of size (1, 3, 224, 224)
+
+    The classification prediction output is formatted to a string and
+    then returned.
+    """
+    # pre-process the image
+    pre_processed_image = pre_process_image(image)
+
+    # get image ready for prediction
+    input_image = transform_pipeline(pre_processed_image)
+    input_image = input_image.unsqueeze(0)
+    input_image = input_image.to(DEVICE)
+
+    # get the pre-trained model
+    model = torch.load('app/projects/skin_cancer_diagnosis/model.pth', map_location=DEVICE)
+    model.eval()
+
+    # get prediction
+    prediction = model(input_image)
+    prediction = functional.softmax(prediction.float(), dim=1)
+    value, index = torch.max(prediction, 1)
+
+    value = int(value[0] * 100)
+    if index[0] == 0:
+        prediction = {"classification": "Benign", "percentage": value}
+    else:
+        prediction = {"classification": "Malignant", "percentage": value}
 
     return prediction
