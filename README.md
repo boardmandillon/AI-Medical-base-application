@@ -32,7 +32,10 @@ The Docker image can be rebuilt and stored on the remote Docker repository.
 - cd to project directory base
 - Run the following commands:
 
+`docker login registry.gitlab.com`
+
 `docker build -t registry.gitlab.com/ll16d4b/comp3931 .`
+
 `docker push registry.gitlab.com/ll16d4b/comp3931`
 
 ---

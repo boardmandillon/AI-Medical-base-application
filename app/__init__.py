@@ -11,6 +11,9 @@ from logging.handlers import RotatingFileHandler
 from flask_admin import Admin
 from flask_admin.menu import MenuLink
 from flask_jwt_extended import JWTManager
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 
 import os
 from datetime import datetime, timedelta
@@ -26,6 +29,7 @@ login.login_view = 'auth.login'
 bootstrap = Bootstrap()
 mail = Mail()
 celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
+limiter = Limiter(key_func=get_remote_address, default_limits=["60 per hour"])
 
 
 def create_app(config_class=Config):
@@ -97,5 +101,7 @@ def create_app(config_class=Config):
     app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=60)
     JWTManager(app)
+
+    limiter.init_app(app)
 
     return app
