@@ -2,12 +2,14 @@ from flask import render_template, redirect, url_for, flash, request
 from flask_login import current_user, login_user, logout_user
 from werkzeug.urls import url_parse
 
+from app import limiter
 from app.auth import bp
-from app.models.user import User
 from app.auth.forms import LoginForm
+from app.models.user import User
 
 
 @bp.route('/login', methods=['GET', 'POST'])
+@limiter.limit("3 per minute")
 def login():
     """Page for logging in as a user."""
     if current_user.is_authenticated:

@@ -5,13 +5,16 @@ from flask_jwt_extended import (
     create_refresh_token,
     get_jwt_identity
 )
+from flask_limiter import Limiter
 
-from app import db_relational as db
 from app.api import bp
 from app.api.auth import basic_auth
 
+limiter = Limiter()
+
 
 @bp.route('/authenticate', methods=['POST'])
+@limiter.limit("3/minute")
 @basic_auth.login_required
 def get_token():
     """ Generates a authentication and refresh token for a user """
