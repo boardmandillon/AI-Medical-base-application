@@ -1,3 +1,11 @@
+
+# color_constancy function is adapted from isic2018-skin-lesion-classifier-tensorflow
+## Author: Abhishek Rana
+## Date: 22/04/2021
+## Name: utils_image.py
+## Type: source code
+## Web address: https://github.com/abhishekrana/isic2018-skin-lesion-classifier-tensorflow/blob/master/utils/utils_image.py
+
 import os
 
 import cv2
