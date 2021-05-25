@@ -2,6 +2,7 @@ import base64
 import binascii
 from io import BytesIO
 
+import flask
 from PIL.Image import Image
 from flask import request , jsonify
 from flask_jwt_extended import (jwt_required , get_jwt_identity)
@@ -19,33 +20,17 @@ def pocpic():
         data = request.get_json() or {}
     else:
         data = request.form.to_dict() or {}
-    # app.logger.info (
-    #     "{} Data receive: {}".format (
-    #         PointOfCareOCR.PROJECT_NAME , data ) )
-    if not data.get('monitor_image'):
+    app.logger.info (
+        "Data receive: {}".format(data))
+    if not flask.request.files['monitor_image']:
         app.logger.info("must include content type and photo data in request")
         return bad_request('must include content type and photo data in request')
-    photo_base64 = data.get('monitor_image')
+    monitor_image = flask.request.files['monitor_image']
+    monitor_type = data.get('monitor_type')
+    app.logger.info("Monitor type: {}".format(monitor_type))
+    app.logger.info("Image: {}".format(monitor_image))
 
-    # app.logger.info("Image base64 string {}".format(photo_base64))
-    # try:
-    #     app.logger.info("decode base64 string")
-    #     diagnosis_photo = base64.b64decode(photo_base64, validate=True)
-    # except binascii.Error:
-    #     app.logger.info("failed to decode base64 string")
-    #     return bad_request('failed to decode base64 string')
-    # del data['monitor_image']
-    #
-    # try:
-    #     imageBytes = BytesIO(diagnosis_photo)
-    #     image = Image.open(imageBytes)
-    #
-    #     content_type = image.format
-    #     image.close()
-    # except IOError:
-    #     return bad_request('image file is not valid')
-
-    current_user = get_jwt_identity()
+    image = Image.open(monitor_image)
     #TODO: insert predicting algorithm function here
     ret = {
         "systolic": "0",
@@ -66,23 +51,9 @@ def pocResult():
         data = request.form.to_dict () or {}
 
     app.logger.info("Data receive: {}".format(data))
-    # time = data.get('time')
-    # systolic = data.get('systolic')
-    # diastolic = data.get('diastolic')
-    # pulse = data.get('heartRate')
-
     current_user = get_jwt_identity()
     model = PointOfCareOCR._save_data(data, current_user)
     app.logger.info("Model saved: {}".format(model))
-    # model = POC_OCR_Model(
-    #     user_id=current_user['id'] ,
-    #     time=time ,
-    #     systolic=systolic ,
-    #     diastolic=diastolic ,
-    #     heartRate=pulse
-    # )
-    #
-    # model.save()
     return jsonify(model), 201
 
 
