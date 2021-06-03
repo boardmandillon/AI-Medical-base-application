@@ -1,17 +1,21 @@
-from flask import jsonify, g
+import redis
+from flask import jsonify , g
 from flask_jwt_extended import (
-    jwt_refresh_token_required,
-    create_access_token,
-    create_refresh_token,
-    get_jwt_identity
+    jwt_refresh_token_required ,
+    create_access_token ,
+    create_refresh_token ,
+    get_jwt_identity , jwt_required , get_jti
 )
 from flask_limiter import Limiter
 
 from app.api import bp
 from app.api.auth import basic_auth
+from base_application import app
 
 limiter = Limiter()
-
+jwt_redis_blocklist = redis.StrictRedis(
+    host="localhost", port=6379, db=0, decode_responses=True
+)
 
 @bp.route('/authenticate', methods=['POST'])
 @limiter.limit("3/minute")
@@ -39,3 +43,12 @@ def refresh():
     ret = {"access_token": create_access_token(identity=user)}
 
     return jsonify(ret), 200
+
+@bp.route('/logout', methods=['DELETE'])
+@jwt_required
+def logout():
+    jti = get_jti()
+    jwt_redis_blocklist.set(jti, "", ex=app.config.keys("JWT_ACCESS_TOKEN_EXPIRES"))
+    return jsonify(msg="Access token revoked"), 200
+
+
