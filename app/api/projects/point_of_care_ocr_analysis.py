@@ -1,9 +1,5 @@
-import base64
-import binascii
-from io import BytesIO
-
 import flask
-from PIL.Image import Image
+import werkzeug
 from flask import request , jsonify
 from flask_jwt_extended import (jwt_required , get_jwt_identity)
 from app.api import bp
@@ -11,6 +7,8 @@ from app.api.errors import bad_request
 from app.projects.pointofcare_ocr.pointofcare import PointOfCareOCR
 from app.projects.pointofcare_ocr.pointofcare_model import POC_OCR_Model
 from flask import current_app as app
+
+from app.projects.pointofcare_ocr.predictor import predict
 
 
 @bp.route ( '/pocimg' , methods=['POST'] )
@@ -29,13 +27,19 @@ def pocpic():
     monitor_type = data.get('monitor_type')
     app.logger.info("Monitor type: {}".format(monitor_type))
     app.logger.info("Image: {}".format(monitor_image))
+    filename = werkzeug.utils.secure_filename(monitor_image.filename)
+    monitor_image.save(filename)
+    if monitor_type == "Omron RS4":
+        results = predict("omron_rs4", filename)
+    elif monitor_type == "A&D UA-611":
+        results = predict("a&d", filename)
+    else:
+        results = predict("kinetik", filename)
 
-    image = Image.open(monitor_image)
-    #TODO: insert predicting algorithm function here
     ret = {
-        "systolic": "0",
-        "diastolic": "0",
-        "pulse": "0",
+        "systolic": results[0],
+        "diastolic": results[1],
+        "pulse": results[2],
         "time": "0"
     }
     return jsonify(ret), 200
