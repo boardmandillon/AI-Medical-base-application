@@ -100,8 +100,8 @@ def create_app(config_class=Config):
     # Setup the Flask-JWT-Extended extension
     app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=60)
-    JWTManager(app)
+    jwt = JWTManager(app)
 
     limiter.init_app(app)
 
-    return app
+    return app, jwt
