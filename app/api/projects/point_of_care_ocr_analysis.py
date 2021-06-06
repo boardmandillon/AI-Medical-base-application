@@ -61,7 +61,7 @@ def pocResult():
     return jsonify(model), 201
 
 
-@bp.route ( '/pocresult' )
+@bp.route ( '/getpocresult' )
 @jwt_required()
 def getPocRecords () :
     """Retrieves records of a user."""

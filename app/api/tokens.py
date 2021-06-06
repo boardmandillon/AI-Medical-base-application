@@ -16,7 +16,7 @@ from app.api.auth import basic_auth
 
 jwt_redis_blocklist = redis.StrictRedis(host="localhost", port=6379, db=0, decode_responses=True)
 
-
+# implemented on https://flask-jwt-extended.readthedocs.io/en/stable/blocklist_and_token_revoking/?highlight=logout
 # Callback function to check if a JWT exists in the redis blocklist
 @jwt.token_in_blocklist_loader
 def check_if_token_is_revoked(_, jwt_payload):
