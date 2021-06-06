@@ -1,3 +1,5 @@
+from datetime import date
+
 import flask
 import werkzeug
 from flask import request , jsonify
@@ -10,10 +12,11 @@ from flask import current_app as app
 
 from app.projects.pointofcare_ocr.predictor import predict
 
-
+CANNOT_DETECT_DIGITS_ERROR = 100
 @bp.route ( '/pocimg' , methods=['POST'] )
 @jwt_required()
 def pocpic():
+    submission_time = date.today()
     if request.headers['Content-Type'] == 'application/json':
         data = request.get_json() or {}
     else:
@@ -40,7 +43,7 @@ def pocpic():
         "systolic": results[0],
         "diastolic": results[1],
         "pulse": results[2],
-        "time": "0"
+        "time": submission_time
     }
     return jsonify(ret), 200
 

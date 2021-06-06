@@ -56,7 +56,7 @@ def refresh():
 # Endpoint for revoking the current users access token. Save the JWTs unique
 # identifier (jti) in redis. Also set a Time to Live (TTL) when storing the JWT
 # so that it will automatically be cleared out of redis after the token expires.
-@bp.route('/logout', methods=['DELETE'])
+@bp.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
     """ Move the user's access and refresh token into the block list """

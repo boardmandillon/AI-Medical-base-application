@@ -1,3 +1,6 @@
+import operator
+import os
+
 import cv2
 import imutils
 import numpy as np
@@ -14,8 +17,8 @@ def predict(monitor_type, filename):
     img_resize = imutils.resize(image, height=300)
 
     if monitor_type == "kinetik":
-        img_resize = cv2.addWeighted(img_resize.copy(), 0.3, np.zeros(img_resize.shape, img_resize.dtype), 0,0)
-        grey = cv2.cvtColor ( img_resize.copy() , cv2.COLOR_BGR2GRAY )
+        img_weight = cv2.addWeighted(img_resize.copy(), 0.3, np.zeros(img_resize.shape, img_resize.dtype), 0,0)
+        grey = cv2.cvtColor ( img_weight.copy() , cv2.COLOR_BGR2GRAY )
         blurred = cv2.GaussianBlur ( grey.copy () , (13 , 13) , 0 )
         thresh = cv2.threshold ( blurred.copy () , 0 , 255 , cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU )[1]
     else:
@@ -36,17 +39,23 @@ def predict(monitor_type, filename):
                 if (w >= 0 and w < 187) and (h >= 15 and h <= 110) :
                     number_tuple = (x , y , w , h)
                     digitsCnts.append ( number_tuple )
+                    cv2.rectangle ( img_resize , (x , y) , (x + w , y + h) , color=(0 , 255 , 0) , thickness=2 )
+                    cv2.imwrite("contours.jpg", img_resize)
         elif monitor_type == "kinetik" :
             if x > 60 and h > 10 :
                 number_tuple = (x , y , w , h)
                 digitsCnts.append ( number_tuple )
+                cv2.rectangle ( img_resize , (x , y) , (x + w , y + h) , color=(0 , 255 , 0) , thickness=2 )
+                cv2.imwrite ( "contours.jpg" , img_resize )
         elif monitor_type == "a&d" :
             if (w >= 10 and w <= 50) and (h >= 40 and h <= 110) :
                 number_tuple = (x , y , w , h)
                 digitsCnts.append ( number_tuple )
+                cv2.rectangle ( img_resize , (x , y) , (x + w , y + h) , color=(0 , 255 , 0) , thickness=2 )
+                cv2.imwrite ( "contours.jpg" , img_resize )
 
     number_id = 1
-    # digitsCnts.sort ( key=operator.itemgetter ( 0 ) , reverse=True )
+    digitsCnts.sort( key=operator.itemgetter ( 0 ) , reverse=True )
     # digitsCnts.sort ( key=operator.itemgetter ( 1 ) )
 
     for d in digitsCnts :
@@ -71,11 +80,12 @@ def predict(monitor_type, filename):
         predict_numbers.append ( np.argmax ( prediction ) )
         number_list[i].update_prediction ( np.argmax ( prediction ))
 
+    print(x.prediction for x in number_list)
     outcome = list()
     if monitor_type == "omron_rs4":
-        image = image[0 :300 , 0 :170]
+        img_resize = img_resize[0 :300 , 0 :170]
 
-    gray = cv2.cvtColor (image.copy () , cv2.COLOR_BGR2GRAY )
+    gray = cv2.cvtColor (img_resize.copy () , cv2.COLOR_BGR2GRAY )
 
     # threshold the grayscale image
     thresh = cv2.threshold ( gray , 0 , 255 , cv2.THRESH_BINARY + cv2.THRESH_OTSU )[1]
@@ -97,10 +107,16 @@ def predict(monitor_type, filename):
                 number_region = NumberRegion ( i , x , y , w , h , list () )
                 number_regions.append ( number_region )
                 i += 1
+                cv2.rectangle ( img_resize , (x , y) , (x + w , y + h) , color=(0 , 0 , 255) , thickness=2 )
+                cv2.imwrite ( "regions.jpg" , img_resize )
         else :
             number_region = NumberRegion ( i , x , y , w , h , list () )
             number_regions.append ( number_region )
             i += 1
+            cv2.rectangle ( img_resize , (x , y) , (x + w , y + h) , color=(0 , 0 , 255) , thickness=2 )
+            cv2.imwrite ( "regions.jpg" , img_resize )
+
+    number_regions.sort(key=lambda n: n.y, reverse=True)
 
     for i in range ( len ( number_regions ) ) :
         region_x = number_regions[i].x
@@ -122,6 +138,9 @@ def predict(monitor_type, filename):
         outcome.append ( number_str )
         print ( number_str )
     print(outcome)
+    os.remove(filename)
+    os.remove("regions.jpg")
+    os.remove("contours.jpg")
     return outcome
 
 
