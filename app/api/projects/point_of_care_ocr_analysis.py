@@ -13,7 +13,7 @@ from flask import current_app as app
 
 
 @bp.route ( '/pocimg' , methods=['POST'] )
-@jwt_required
+@jwt_required()
 def pocpic():
     if request.headers['Content-Type'] == 'application/json':
         data = request.get_json() or {}
@@ -57,7 +57,7 @@ def pocpic():
 
 
 @bp.route ( '/pocresult' , methods=['POST'] )
-@jwt_required
+@jwt_required()
 def pocResult():
     """Creates record of Blood pressure results from JSON data in the request."""
     if request.headers['Content-Type'] == 'application/json' :
@@ -87,7 +87,7 @@ def pocResult():
 
 
 @bp.route ( '/pocresult' )
-@jwt_required
+@jwt_required()
 def getPocRecords () :
     """Retrieves records of a user."""
     current_user = get_jwt_identity ()
@@ -95,7 +95,7 @@ def getPocRecords () :
 
 
 @bp.route ( '/pocresult/<doc_id>' , methods=['DELETE'] )
-@jwt_required
+@jwt_required()
 def poc_delete_from_id ( doc_id ) :
     """Deletes records corresponding to the given ID."""
     current_user = get_jwt_identity ()

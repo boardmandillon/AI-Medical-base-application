@@ -1,14 +1,12 @@
-from flask import request
 from flask import jsonify
+from flask import request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from flask_jwt_extended import (fresh_jwt_required, get_jwt_identity)
-
-from app.models.user import User
 from app import db_relational as db
-
 from app.api import bp
 from app.api.errors import bad_request, forbidden
 from app.auth.sendemail import send_password_reset_email
+from app.models.user import User
 
 
 @bp.route('/users', methods=['POST'])
@@ -57,7 +55,7 @@ def password_reset():
 
 
 @bp.route('/users/password', methods=['PUT'])
-@fresh_jwt_required
+@jwt_required(fresh=True)
 def password():
     """Changes the password to the given new password for the user
     corresponding to the given password reset token.

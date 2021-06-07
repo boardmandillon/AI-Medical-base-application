@@ -1,25 +1,24 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager
-from flask_bootstrap import Bootstrap
-from flask_mongoengine import MongoEngine
-from flask_mail import Mail
-from celery import Celery
 import logging
+import os
+from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
+
+from celery import Celery
+from flask import Flask
 from flask_admin import Admin
 from flask_admin.menu import MenuLink
+from flask_bootstrap import Bootstrap
 from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_login import LoginManager
+from flask_mail import Mail
+from flask_migrate import Migrate
+from flask_mongoengine import MongoEngine
+from flask_sqlalchemy import SQLAlchemy
 
-
-import os
-from datetime import datetime, timedelta
-
-from config import Config
 from app.admin import BaseAdminIndexView, UserModelView
+from config import Config
 
 db_relational = SQLAlchemy()
 db_mongo = MongoEngine()
@@ -30,6 +29,7 @@ bootstrap = Bootstrap()
 mail = Mail()
 celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
 limiter = Limiter(key_func=get_remote_address, default_limits=["60 per hour"])
+jwt = JWTManager()
 
 
 def create_app(config_class=Config):
@@ -100,8 +100,9 @@ def create_app(config_class=Config):
     # Setup the Flask-JWT-Extended extension
     app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=60)
-    jwt = JWTManager(app)
+    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
+    jwt.init_app(app)
 
     limiter.init_app(app)
 
-    return app, jwt
+    return app
