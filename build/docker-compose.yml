@@ -4,12 +4,6 @@ services:
         image: "registry.gitlab.com/ll16d4b/comp3931"
         ports:
             - "5000:5000"
-        deploy:
-            restart_policy:
-                condition: on-failure
-                delay: 5s
-                max_attempts: 3
-                window: 120s
         environment:
             RELATIONAL_DB_URI: postgresql://vulture:vulturejP!^vx,E7z@postgres:5432/vulturePostgres
             MONGODB_DB: vultureMongo
@@ -37,12 +31,6 @@ services:
             MONGO_INITDB_DATABASE: vultureMongo
         networks:
             - vulture-dev
-        deploy:
-            restart_policy:
-                condition: on-failure
-                delay: 5s
-                max_attempts: 3
-                window: 120s
         volumes:
             - mongo-datavolume:/data/db/
             - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
@@ -57,12 +45,6 @@ services:
             POSTGRES_DB: vulturePostgres
         networks:
             - vulture-dev
-        deploy:
-            restart_policy:
-                condition: on-failure
-                delay: 5s
-                max_attempts: 3
-                window: 120s
         volumes:
             - postgres-datavolume:/var/lib/postgresql
 
@@ -72,12 +54,6 @@ services:
             - "6379:6379"
         networks:
             - vulture-dev
-        deploy:
-            restart_policy:
-                condition: on-failure
-                delay: 5s
-                max_attempts: 3
-                window: 120s
         volumes:
             - redis-datavolume:/data
 
@@ -86,12 +62,6 @@ services:
         command: celery worker -A celery_worker.celery -l info
         networks:
             - vulture-dev
-        deploy:
-            restart_policy:
-                condition: on-failure
-                delay: 5s
-                max_attempts: 3
-                window: 120s
         environment:
             RELATIONAL_DB_URI: postgresql://vulture:vulturejP!^vx,E7z@postgres:5432/vulturePostgres
             MONGODB_DB: vultureMongo
@@ -108,12 +78,6 @@ services:
         command: celery beat -A celery_worker.celery --loglevel=info
         networks:
             - vulture-dev
-        deploy:
-            restart_policy:
-                condition: on-failure
-                delay: 5s
-                max_attempts: 3
-                window: 120s
         environment:
             RELATIONAL_DB_URI: postgresql://vulture:vulturejP!^vx,E7z@postgres:5432/vulturePostgres
             MONGODB_DB: vultureMongo
