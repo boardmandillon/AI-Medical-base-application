@@ -2,15 +2,15 @@ import os
 import unittest
 
 from app import create_app, db_relational as db
+from app.api import auth
 from app.tests.setup import setUp
 from config import Config, basedir
-from app.models.user import User
-from app.api import auth
 
 
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'test.db')
+
 
 class AuthTest(unittest.TestCase):
     """Class for basic test cases."""
@@ -38,7 +38,7 @@ class AuthTest(unittest.TestCase):
     def test_verify_password_returnsTrue_whenValidEmailPassword(self):
         setUp.setUpTestUser()
 
-        response = auth.verify_password('user@email.com','password')
+        response = auth.verify_password('user@email.com', 'password')
 
         self.assertEqual(response, True)
 
@@ -54,16 +54,12 @@ class AuthTest(unittest.TestCase):
 
         self.assertEqual(response, False)
 
-
-
-
     def test_basic_auth_error_returnsHTTPError(self):
         response = auth.basic_auth_error()
 
         self.assertEqual(response.status_code, 401)
 
     ############################################################################
-
 
 
 if __name__ == "__main__":
