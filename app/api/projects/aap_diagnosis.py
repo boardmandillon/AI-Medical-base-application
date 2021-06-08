@@ -14,7 +14,7 @@ from app.projects.aap_diagnosis.aap_women_diagnosis import AAPWomenDiagnosis
 
 
 @bp.route('/aap-diagnosis/', methods=['POST'])
-@jwt_required
+@jwt_required()
 def aap_create_diagnosis():
     """Creates diagnosis from JSON data in the request."""
     if 'application/json' in request.headers['Content-Type']:
@@ -37,7 +37,7 @@ def aap_create_diagnosis():
 
 
 @bp.route('/aap-diagnosis/')
-@jwt_required
+@jwt_required()
 def aap_get_diagnoses():
     """Retrieves AAP diagnoses of a user (main dataset)."""
     current_user = get_jwt_identity()
@@ -45,7 +45,7 @@ def aap_get_diagnoses():
 
 
 @bp.route('/aap-diagnosis/<doc_id>')
-@jwt_required
+@jwt_required()
 def aap_get_diagnosis_from_id(doc_id):
     """Retrieves diagnosis corresponding to the given ID."""
     current_user = get_jwt_identity()
@@ -55,7 +55,7 @@ def aap_get_diagnosis_from_id(doc_id):
     return jsonify(model.to_dict())
 
 @bp.route('/aap-men-diagnosis/<doc_id>')
-@jwt_required
+@jwt_required()
 def aap_men_get_diagnosis_from_id(doc_id):
     """Retrieves men diagnosis corresponding to the given AAP ID."""
     current_user = get_jwt_identity()
@@ -65,7 +65,7 @@ def aap_men_get_diagnosis_from_id(doc_id):
     return jsonify(model.to_dict())
 
 @bp.route('/aap-women-diagnosis/<doc_id>')
-@jwt_required
+@jwt_required()
 def aap_women_get_diagnosis_from_id(doc_id):
     """Retrieves women diagnosis corresponding to the given AAP ID."""
     current_user = get_jwt_identity()
@@ -76,7 +76,7 @@ def aap_women_get_diagnosis_from_id(doc_id):
 
 
 @bp.route('/aap-diagnosis/<doc_id>', methods=['DELETE'])
-@jwt_required
+@jwt_required()
 def aap_delete_diagnosis_from_id(doc_id):
     """Deletes diagnoses corresponding to the given ID,
          across all AAPDiagnosis datasets."""
@@ -96,7 +96,7 @@ def aap_delete_diagnosis_from_id(doc_id):
 
 
 @bp.route('/aap-diagnosis/<doc_id>', methods=['PATCH'])
-@jwt_required
+@jwt_required()
 @user_role_required(UserRoles.EXPERT)
 def confirm_aap_diagnosis(doc_id):
     """Updates actual diagnosis field of the given record."""
@@ -121,7 +121,7 @@ def confirm_aap_diagnosis(doc_id):
 
 
 @bp.route('/aap-diagnosis/dataset-accuracy')
-@jwt_required
+@jwt_required()
 def aap_get_dataset_accuracy():
     """Retrieves aap dataset accuracy."""
     score = AAPDiagnosis.model_accuracy()
@@ -131,7 +131,7 @@ def aap_get_dataset_accuracy():
         return bad_request("Error calculating accuracy.")
 
 @bp.route('/aap-men-diagnosis/dataset-accuracy')
-@jwt_required
+@jwt_required()
 def aap_men_get_dataset_accuracy():
     """Retrieves men dataset accuracy."""
     score = AAPMenDiagnosis.model_accuracy()
@@ -141,7 +141,7 @@ def aap_men_get_dataset_accuracy():
         return bad_request("Error calculating accuracy.")
 
 @bp.route('/aap-women-diagnosis/dataset-accuracy')
-@jwt_required
+@jwt_required()
 def aap_women_get_dataset_accuracy():
     """Retrieves women dataset accuracy."""
     score = AAPWomenDiagnosis.model_accuracy()

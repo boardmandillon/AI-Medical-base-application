@@ -17,7 +17,7 @@ import bson
 
 
 @bp.route('/urine_dipstick_analysis/', methods=['POST'])
-@jwt_required
+@jwt_required()
 def upload_urine_analysis_image():
     """Extracts urine dipstick image from JSON data in the request.
 
@@ -55,7 +55,7 @@ def upload_urine_analysis_image():
 
 
 @bp.route('/urine_dipstick_analysis/', methods=['GET'])
-@jwt_required
+@jwt_required()
 def get_urine_analysis():
     """Retrieves analysis image corresponding to a given document object ID
     passed as a URL parameter.

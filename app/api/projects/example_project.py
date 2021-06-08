@@ -9,7 +9,7 @@ from app.models.user import UserRoles
 
 
 @bp.route('/example/', methods=['POST'])
-@jwt_required
+@jwt_required()
 def example_create():
     """Creates diagnosis from JSON data in the request."""
     if request.headers['Content-Type'] == 'application/json':
@@ -22,7 +22,7 @@ def example_create():
 
 
 @bp.route('/example/')
-@jwt_required
+@jwt_required()
 def example_get():
     """Retrieves a users documents."""
     current_user = get_jwt_identity()
@@ -30,7 +30,7 @@ def example_get():
 
 
 @bp.route('/example/<doc_id>')
-@jwt_required
+@jwt_required()
 def example_get_from_id(doc_id):
     """Retrieves record corresponding to the given ID."""
     current_user = get_jwt_identity()
@@ -42,7 +42,7 @@ def example_get_from_id(doc_id):
 
 
 @bp.route('/example/<doc_id>', methods=['DELETE'])
-@jwt_required
+@jwt_required()
 def example_delete_from_id(doc_id):
     """Deletes record corresponding to the given ID."""
     current_user = get_jwt_identity()
@@ -53,7 +53,7 @@ def example_delete_from_id(doc_id):
 
 
 @bp.route('/example/<doc_id>', methods=['PATCH'])
-@jwt_required
+@jwt_required()
 @user_role_required(UserRoles.USER)
 def example_update(doc_id):
     """Updates fields of the document from the JSON data in the request."""
@@ -72,7 +72,7 @@ def example_update(doc_id):
 
 
 @bp.route('/example/labels')
-@jwt_required
+@jwt_required()
 def example_labels_get():
     """Retrieves the possible labels which the data might be given."""
     return jsonify(ExampleModel.possible_labels)

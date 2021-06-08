@@ -7,7 +7,7 @@ from app.projects.skin_cancer_diagnosis import predictor
 
 
 @bp.route('/skin-cancer-diagnosis', methods=['POST'])
-@jwt_required
+@jwt_required()
 def diagnose_skin_lesion():
     """
     Extracts lesion image from JSON data in the request.

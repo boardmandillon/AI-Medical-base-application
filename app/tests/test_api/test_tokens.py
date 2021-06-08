@@ -1,17 +1,16 @@
+import json
 import os
 import unittest
-import json
 
 from app import create_app, db_relational as db
 from app.tests.setup import setUp
 from config import Config, basedir
-from app.models.user import User
-from app.api import tokens
 
 
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'test.db')
+
 
 class TokensTest(unittest.TestCase):
     """Class for basic test cases."""
@@ -35,38 +34,52 @@ class TokensTest(unittest.TestCase):
 
     # Unit test cases
     ############################################################################
-    def test_get_token(self):
+    def test_get_tokens(self):
         setUp.setUpTestUser()
-        response = self.get_token()
+        response = self.get_tokens()
 
         self.assertEqual(response.status_code, 200)
 
-    def test_refresh_token(self):
+    def test_token_refresh(self):
         setUp.setUpTestUser()
-        authentication_token = json.loads(self.get_token().data)
-        refresh_token = authentication_token["refresh_token"]
+        data = json.loads(self.get_tokens().data)
 
-        response = self.refresh_token(refresh_token)
+        refresh_token = data["refresh_token"]
+        response = self.refresh(refresh_token)
 
         self.assertEqual(response.status_code, 200)
 
+    def test_token_blocklist(self):
+        setUp.setUpTestUser()
+        data = json.loads(self.get_tokens().data)
+
+        access_token = data["access_token"]
+        refresh_token = data["refresh_token"]
+
+        self.logout(access_token, refresh_token)
+        response = self.refresh(refresh_token)
+
+        self.assertEqual(response.status_code, 401)
 
     # helper methods
     ############################################################################
-    def get_token(self):
+    def get_tokens(self):
         return self.app.test_client().post(
             '/api/authenticate',
-            headers = {
-                'Authorization': 'Basic dXNlckBlbWFpbC5jb206cGFzc3dvcmQ=' # base64 encoded (user@email.com:password)
-            }
+            headers={'Authorization': 'Basic dXNlckBlbWFpbC5jb206cGFzc3dvcmQ='}  # base64 encoded (user@email.com:password)
         )
 
-    def refresh_token(self, refresh_token):
+    def refresh(self, refresh_token):
         return self.app.test_client().post(
             '/api/refresh',
-            headers = {
-                'Authorization': f'Bearer {refresh_token}'
-            }
+            headers={'Authorization': f'Bearer {refresh_token}'}
+        )
+
+    def logout(self, access_token, refresh_token):
+        return self.app.test_client().delete(
+            '/api/logout',
+            headers={'Authorization': f'Bearer {access_token}'},
+            data=dict(refresh_token=refresh_token)
         )
 
 

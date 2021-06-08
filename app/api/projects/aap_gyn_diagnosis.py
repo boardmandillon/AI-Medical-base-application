@@ -12,7 +12,7 @@ from app.projects.aap_diagnosis.aap_gyn_diagnosis import AAPGynDiagnosis
 
 
 @bp.route('/aap-gyn-diagnosis/', methods=['POST'])
-@jwt_required
+@jwt_required()
 def aap_gyn_create_diagnosis():
     """Creates diagnosis from JSON data in the request."""
     if 'application/json' in request.headers['Content-Type']:
@@ -30,7 +30,7 @@ def aap_gyn_create_diagnosis():
 
 
 @bp.route('/aap-gyn-diagnosis/')
-@jwt_required
+@jwt_required()
 def aap_gyn_get_diagnoses():
     """Retrieves diagnoses of a user."""
     current_user = get_jwt_identity()
@@ -39,7 +39,7 @@ def aap_gyn_get_diagnoses():
 
 
 @bp.route('/aap-gyn-diagnosis/<doc_id>')
-@jwt_required
+@jwt_required()
 def aap_gyn_get_diagnosis_from_id(doc_id):
     """Retrieves diagnosis corresponding to the given ID."""
     current_user = get_jwt_identity()
@@ -50,7 +50,7 @@ def aap_gyn_get_diagnosis_from_id(doc_id):
 
 
 @bp.route('/aap-gyn-diagnosis/<doc_id>', methods=['DELETE'])
-@jwt_required
+@jwt_required()
 def aap_gyn_delete_diagnosis_from_id(doc_id):
     """Deletes diagnosis corresponding to the given ID."""
     current_user = get_jwt_identity()
@@ -61,7 +61,7 @@ def aap_gyn_delete_diagnosis_from_id(doc_id):
 
 
 @bp.route('/aap-gyn-diagnosis/<doc_id>', methods=['PATCH'])
-@jwt_required
+@jwt_required()
 @user_role_required(UserRoles.EXPERT)
 def confirm_aap_gyn_diagnosis(doc_id):
     """Updates actual diagnosis field of the given record."""

@@ -9,12 +9,15 @@ from unittest.mock import patch
 from app.models.user import User
 from app.auth.sendemail import create_password_reset_token
 
+
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'test.db')
 
+
 class UsersTest(unittest.TestCase):
     """Class for basic test cases."""
+
     def setUp(self):
         "set up test fixtures"
         app = create_app(TestConfig)
@@ -68,41 +71,40 @@ class UsersTest(unittest.TestCase):
 
         response_message = json.loads(response.get_data().decode("utf-8"))['message']
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response_message,'Please use a different email address')
+        self.assertEqual(response_message, 'Please use a different email address')
 
     def test_create_user_returns400AndErrorMessage_whenMissingEmail(self):
-            response = self.register(
-                None,
-                'password',
-                'Test McTest'
-            )
+        response = self.register(
+            None,
+            'password',
+            'Test McTest'
+        )
 
-            response_message = json.loads(response.get_data().decode("utf-8"))['message']
-            self.assertEqual(response.status_code, 400)
-            self.assertEqual(response_message,"Must include 'email', 'password', 'name'")
+        response_message = json.loads(response.get_data().decode("utf-8"))['message']
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response_message, "Must include 'email', 'password', 'name'")
 
     def test_create_user_returns400AndErrorMessage_whenMissingName(self):
-            response = self.register(
-                'user@email.com',
-                'password',
-                None
-            )
+        response = self.register(
+            'user@email.com',
+            'password',
+            None
+        )
 
-            response_message = json.loads(response.get_data().decode("utf-8"))['message']
-            self.assertEqual(response.status_code, 400)
-            self.assertEqual(response_message,"Must include 'email', 'password', 'name'")
+        response_message = json.loads(response.get_data().decode("utf-8"))['message']
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response_message, "Must include 'email', 'password', 'name'")
 
     def test_create_user_returns400AndErrorMessage_whenMissingPassword(self):
-            response = self.register(
-                'user@email.com',
-                None,
-                'Test McTest'
-            )
+        response = self.register(
+            'user@email.com',
+            None,
+            'Test McTest'
+        )
 
-            response_message = json.loads(response.get_data().decode("utf-8"))['message']
-            self.assertEqual(response.status_code, 400)
-            self.assertEqual(response_message,"Must include 'email', 'password', 'name'")
-
+        response_message = json.loads(response.get_data().decode("utf-8"))['message']
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response_message, "Must include 'email', 'password', 'name'")
 
     def test_password_reset_returns204_whenValidRequest(self):
         response = self.reset_password_request(
@@ -135,7 +137,7 @@ class UsersTest(unittest.TestCase):
 
         response_message = json.loads(response.get_data().decode("utf-8"))['message']
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response_message,"Must include 'email' field")
+        self.assertEqual(response_message, "Must include 'email' field")
 
     @patch('app.api.users.User.verify_reset_password_token')
     def test_password_returns204_whenValidNewPasswordRequest(self, test_patch):
@@ -204,10 +206,10 @@ class UsersTest(unittest.TestCase):
     def set_new_password(self, token, new_password):
         return self.app.test_client().put(
             '/api/users/password',
-            headers = {
+            headers={
                 'Authorization': f'Bearer {token}'
             },
-            data=dict(new_password = new_password)
+            data=dict(new_password=new_password)
         )
 
     def login(self, email, password):
