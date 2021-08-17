@@ -1,6 +1,6 @@
 # AI Medical base application
 
-The base of our final year project that we will be working off of later on.
+The base of our final year project.
 
 ## Prerequisites
 
